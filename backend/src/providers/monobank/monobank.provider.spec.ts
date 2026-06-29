@@ -15,7 +15,7 @@ const sample: MonobankStatementItem[] = JSON.parse(
 const DAY = 86400;
 
 function fakeClient(
-  statementByWindow: MonobankStatementItem[][],
+  statementByCall: MonobankStatementItem[][],
 ): { client: IMonobankClient; calls: Array<[number, number]> } {
   const calls: Array<[number, number]> = [];
   let i = 0;
@@ -27,7 +27,7 @@ function fakeClient(
     }),
     getStatement: async (_acc, from, to) => {
       calls.push([from, to]);
-      return statementByWindow[i++] ?? [];
+      return statementByCall[i++] ?? [];
     },
   };
   return { client, calls };
@@ -61,10 +61,9 @@ describe('MonobankProvider', () => {
   });
 
   it('dedups the same item appearing in overlapping windows', async () => {
-    // two windows, both returning the first sample row -> one result
     const { client } = fakeClient([[sample[0]], [sample[0]]]);
     const provider = new MonobankProvider(client, {
-      sinceSec: nowSec - 45 * DAY, // forces 2 windows (30-day step)
+      sinceSec: nowSec - 45 * DAY, // 2 windows
       wait: async () => {},
       now,
     });
@@ -88,7 +87,7 @@ describe('MonobankProvider', () => {
 
     await provider.fetch();
     expect(calls.length).toBe(2);
-    expect(waits).toEqual([60_000]); // waited once, between the two calls
+    expect(waits).toEqual([60_000]);
   });
 
   it('retries on HTTP 429 then succeeds', async () => {
@@ -117,5 +116,32 @@ describe('MonobankProvider', () => {
     const out = await provider.fetch();
     expect(attempts).toBe(2);
     expect(out).toHaveLength(2);
+  });
+
+  it('stops walking back on HTTP 400 (start of available history)', async () => {
+    let call = 0;
+    const client: IMonobankClient = {
+      getClientInfo: async () => ({
+        clientId: 'c1',
+        name: 'Test',
+        accounts: [{ id: 'acc-1', currencyCode: 980 }],
+      }),
+      getStatement: async () => {
+        // newest window (1st call) has data; older window (2nd call) is 400
+        if (call++ === 0) return sample;
+        const e: Error & { status?: number } = new Error('out of range');
+        e.status = 400;
+        throw e;
+      },
+    };
+    const provider = new MonobankProvider(client, {
+      sinceSec: nowSec - 45 * DAY, // 2 windows
+      wait: async () => {},
+      now,
+    });
+
+    const out = await provider.fetch(); // must not throw
+    expect(out).toHaveLength(2); // got the newest window, stopped at the 400
+    expect(call).toBe(2);
   });
 });

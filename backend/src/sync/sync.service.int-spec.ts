@@ -4,6 +4,7 @@ import { Transaction } from '../modules/transactions/entities/transaction.entity
 import { NormalizedTransaction } from '../core/normalize/normalized-transaction';
 import { TransactionProvider } from '../core/provider/transaction-provider.interface';
 import { TransactionType } from '../modules/transactions/enums/transaction-type.enum';
+import { EventBus, TRANSACTION_CREATED } from '../events/events';
 import { SyncService } from './sync.service';
 
 class FakeProvider implements TransactionProvider {
@@ -16,8 +17,16 @@ class FakeProvider implements TransactionProvider {
   }
 }
 
+class RecordingBus implements EventBus {
+  events: Array<{ event: string; payload: unknown }> = [];
+  emit(event: string, payload: unknown): void {
+    this.events.push({ event, payload });
+  }
+}
+
 function tx(
-  over: Partial<NormalizedTransaction> & Pick<NormalizedTransaction, 'source' | 'externalId'>,
+  over: Partial<NormalizedTransaction> &
+    Pick<NormalizedTransaction, 'source' | 'externalId'>,
 ): NormalizedTransaction {
   return {
     amount: -45000n,
@@ -83,7 +92,12 @@ describe('SyncService (integration)', () => {
     const sync = new SyncService(ds.getRepository(Transaction), [
       new FakeProvider('monobank', [tx({ source: 'monobank', externalId: 'x' })]),
       new FakeProvider('binance_p2p_csv', [
-        tx({ source: 'binance_p2p_csv', externalId: 'x', currencyCode: 'USDT', decimals: 8 }),
+        tx({
+          source: 'binance_p2p_csv',
+          externalId: 'x',
+          currencyCode: 'USDT',
+          decimals: 8,
+        }),
       ]),
     ]);
 
@@ -112,5 +126,22 @@ describe('SyncService (integration)', () => {
       .findOneByOrFail({ source: 'binance_deposit_csv', externalId: 'eth-1' });
     expect(typeof saved.amount).toBe('bigint');
     expect(saved.amount).toBe(huge);
+  });
+
+  it('emits transaction.created once per created row, never for dedup hits', async () => {
+    const bus = new RecordingBus();
+    const provider = new FakeProvider('monobank', [
+      tx({ source: 'monobank', externalId: 'a' }),
+      tx({ source: 'monobank', externalId: 'b' }),
+    ]);
+    const sync = new SyncService(ds.getRepository(Transaction), [provider], bus);
+
+    await sync.sync();
+    expect(bus.events).toHaveLength(2);
+    expect(bus.events.every((e) => e.event === TRANSACTION_CREATED)).toBe(true);
+    expect((bus.events[0].payload as NormalizedTransaction).externalId).toBe('a');
+
+    await sync.sync(); // all dedup hits -> no new events
+    expect(bus.events).toHaveLength(2);
   });
 });

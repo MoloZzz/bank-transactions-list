@@ -3,6 +3,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { Transaction } from '../modules/transactions/entities/transaction.entity';
 import { NormalizedTransaction } from '../core/normalize/normalized-transaction';
 import { TransactionProvider } from '../core/provider/transaction-provider.interface';
+import { EventBus, TRANSACTION_CREATED } from '../events/events';
 
 export interface SourceSyncResult {
   received: number;
@@ -22,13 +23,17 @@ export interface SyncResult {
  *
  * Idempotency (invariant #4): bulk INSERT ... ON CONFLICT (source, externalId)
  * DO NOTHING. Re-running creates no duplicates; only genuinely new rows are
- * inserted, and they're returned so a later subscriber can react to them
- * (transaction.created) without the sync engine knowing about side effects.
+ * inserted.
+ *
+ * For each newly created row it emits TRANSACTION_CREATED on the injected
+ * EventBus (invariant #6) — side effects (Sheets, analytics) live behind that
+ * event, never on this path. Dedup hits emit nothing.
  */
 export class SyncService {
   constructor(
     private readonly repo: Repository<Transaction>,
     private readonly providers: TransactionProvider[],
+    private readonly events?: EventBus,
   ) {}
 
   async sync(): Promise<SyncResult> {
@@ -41,6 +46,11 @@ export class SyncService {
     for (const provider of this.providers) {
       const rows = await provider.fetch();
       const created = await this.persist(rows);
+
+      for (const tx of created) {
+        this.events?.emit(TRANSACTION_CREATED, tx);
+      }
+
       result.bySource[provider.source] = {
         received: rows.length,
         created: created.length,

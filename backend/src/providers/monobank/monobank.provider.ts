@@ -30,11 +30,18 @@ const defaultWait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
  * Monobank data source under the TransactionProvider contract. Does fetch +
  * field-mapping only; knows nothing about the DB, events, or matching.
  *
- * Respects the API limits: walks history in <=31-day windows and waits between
- * statement calls (1 req/60s), backing off on 429. Statement amounts are
- * already signed integer minor units (kopecks) -> straight BigInt (invariant
- * #1). Times are unix seconds -> absolute UTC instants (#2). `mcc` and raw
- * context go to metadata for the later matching layer.
+ * Respects the API limits: each request covers <=31 days and we wait between
+ * statement calls (1 req/60s), backing off on 429.
+ *
+ * History walk: windows are requested NEWEST-FIRST. Monobank answers HTTP 400
+ * (not an empty list) for ranges before the account/statement existed, so a 400
+ * marks the start of available history — we stop walking back at that point.
+ * This realises "full history" without knowing the account's open date and
+ * without sending out-of-range requests endlessly.
+ *
+ * Statement amounts are already signed integer minor units (kopecks) -> straight
+ * BigInt (invariant #1). Times are unix seconds -> absolute UTC instants (#2).
+ * `mcc` and raw context go to metadata for the later matching layer.
  */
 export class MonobankProvider implements TransactionProvider {
   readonly source = 'monobank';
@@ -66,15 +73,21 @@ export class MonobankProvider implements TransactionProvider {
     let firstCall = true;
 
     for (const account of accounts) {
-      for (const w of generateWindows(this.opts.sinceSec, nowSec)) {
+      const windows = generateWindows(this.opts.sinceSec, nowSec);
+      // newest-first: walk back in time, stop at the history boundary (400)
+      for (let i = windows.length - 1; i >= 0; i--) {
+        const w = windows[i];
         if (!firstCall) await this.wait(this.rateLimitMs);
         firstCall = false;
 
-        const items = await this.getStatementWithBackoff(
-          account.id,
-          w.from,
-          w.to,
-        );
+        let items: MonobankStatementItem[];
+        try {
+          items = await this.getStatementWithBackoff(account.id, w.from, w.to);
+        } catch (e) {
+          if ((e as MonobankHttpError).status === 400) break; // before history
+          throw e;
+        }
+
         for (const item of items) {
           if (seen.has(item.id)) continue; // dedup across overlapping windows
           seen.add(item.id);

@@ -1,10 +1,9 @@
-import {
-  MonobankClientInfo,
-  MonobankStatementItem,
-} from './monobank.types';
+import { Logger } from '@nestjs/common';
+import { MonobankClientInfo, MonobankStatementItem } from './monobank.types';
 
 export interface MonobankHttpError extends Error {
   status?: number;
+  body?: string;
 }
 
 /**
@@ -22,6 +21,7 @@ export interface IMonobankClient {
 }
 
 export class MonobankClient implements IMonobankClient {
+  logger = new Logger('MonobankClient');
   constructor(
     private readonly token: string,
     private readonly baseUrl = 'https://api.monobank.ua',
@@ -30,14 +30,17 @@ export class MonobankClient implements IMonobankClient {
   }
 
   private async get<T>(path: string): Promise<T> {
+    this.logger.log(`GET ${path}`);
     const res = await fetch(`${this.baseUrl}${path}`, {
       headers: { 'X-Token': this.token },
     });
     if (!res.ok) {
+      const body = await res.text().catch(() => '');
       const err: MonobankHttpError = new Error(
-        `Monobank ${path} -> ${res.status}`,
+        `Monobank ${path} -> ${res.status}${body ? `: ${body}` : ''}`,
       );
       err.status = res.status;
+      err.body = body;
       throw err;
     }
     return (await res.json()) as T;
