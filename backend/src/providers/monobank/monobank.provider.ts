@@ -61,7 +61,9 @@ export class MonobankProvider implements TransactionProvider {
     this.now = opts.now ?? (() => new Date());
   }
 
-  async fetch(): Promise<NormalizedTransaction[]> {
+  async fetch(sinceSec?: number): Promise<NormalizedTransaction[]> {
+    // incremental watermark from the sync engine, else full-history floor
+    const since = sinceSec ?? this.opts.sinceSec;
     const info = await this.client.getClientInfo();
     const accounts = this.opts.accountIds?.length
       ? info.accounts.filter((a) => this.opts.accountIds!.includes(a.id))
@@ -73,7 +75,7 @@ export class MonobankProvider implements TransactionProvider {
     let firstCall = true;
 
     for (const account of accounts) {
-      const windows = generateWindows(this.opts.sinceSec, nowSec);
+      const windows = generateWindows(since, nowSec);
       // newest-first: walk back in time, stop at the history boundary (400)
       for (let i = windows.length - 1; i >= 0; i--) {
         const w = windows[i];
@@ -121,9 +123,10 @@ export class MonobankProvider implements TransactionProvider {
     item: MonobankStatementItem,
     account: MonobankAccount,
   ): NormalizedTransaction {
-    const { code, decimals } = resolveCurrency(
-      item.currencyCode ?? account.currencyCode,
-    );
+    // `item.amount` is in the ACCOUNT currency; `item.currencyCode` is the
+    // OPERATION currency. Label the stored amount with the account currency
+    // (from client-info); keep the operation amount/currency in metadata.
+    const { code, decimals } = resolveCurrency(account.currencyCode);
     return toNormalized({
       source: this.source,
       externalId: item.id,
@@ -132,6 +135,12 @@ export class MonobankProvider implements TransactionProvider {
       decimals,
       type: TransactionType.TRANSFER,
       bookedAt: new Date(item.time * 1000),
+      account: {
+        externalId: account.id,
+        maskedPan: account.maskedPan?.[0],
+        type: account.type,
+        currencyCode: resolveCurrency(account.currencyCode).code,
+      },
       metadata: {
         accountId: account.id,
         mcc: item.mcc,
@@ -143,6 +152,7 @@ export class MonobankProvider implements TransactionProvider {
         cashbackAmount: item.cashbackAmount,
         balance: item.balance,
         operationAmount: item.operationAmount,
+        operationCurrencyCode: item.currencyCode,
         counterName: item.counterName,
         counterIban: item.counterIban,
         counterEdrpou: item.counterEdrpou,

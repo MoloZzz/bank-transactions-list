@@ -58,6 +58,7 @@ describe('MonobankProvider', () => {
     expect(t0.type).toBe(TransactionType.TRANSFER);
     expect(t0.bookedAt.toISOString()).toBe('2025-06-01T10:00:00.000Z');
     expect(t0.metadata).toMatchObject({ mcc: 5411, accountId: 'acc-1' });
+    expect(t0.account).toMatchObject({ externalId: 'acc-1', currencyCode: 'UAH' });
   });
 
   it('dedups the same item appearing in overlapping windows', async () => {
@@ -115,6 +116,57 @@ describe('MonobankProvider', () => {
 
     const out = await provider.fetch();
     expect(attempts).toBe(2);
+    expect(out).toHaveLength(2);
+  });
+
+  it('labels amount with the ACCOUNT currency, not the operation currency', async () => {
+    // UAH account; a cross-currency operation (operation currency = USD/840).
+    const client: IMonobankClient = {
+      getClientInfo: async () => ({
+        clientId: 'c1',
+        name: 'Test',
+        accounts: [{ id: 'acc-uah', currencyCode: 980 }], // UAH account
+      }),
+      getStatement: async () => [
+        {
+          id: 'xrate-1',
+          time: 1748772000,
+          description: 'Переказ на картку',
+          mcc: 4829,
+          hold: false,
+          amount: -78000, // -780.00 in ACCOUNT currency (UAH)
+          operationAmount: -1732, // -17.32 in OPERATION currency (USD)
+          currencyCode: 840, // operation currency = USD
+        },
+      ],
+    };
+    const provider = new MonobankProvider(client, {
+      sinceSec: nowSec - 5 * DAY,
+      wait: async () => {},
+      now,
+    });
+
+    const [t] = await provider.fetch();
+    expect(t.currencyCode).toBe('UAH'); // account currency, NOT USD
+    expect(t.amount).toBe(-78000n);
+    expect(t.decimals).toBe(2);
+    expect(t.metadata).toMatchObject({
+      operationAmount: -1732,
+      operationCurrencyCode: 840,
+    });
+  });
+
+  it('respects an explicit sinceSec, overriding the configured floor', async () => {
+    const { client, calls } = fakeClient([sample]);
+    const provider = new MonobankProvider(client, {
+      sinceSec: nowSec - 200 * DAY, // wide floor (many windows)...
+      wait: async () => {},
+      now,
+    });
+
+    // ...but the watermark narrows it to a single recent window
+    const out = await provider.fetch(nowSec - 5 * DAY);
+    expect(calls.length).toBe(1);
     expect(out).toHaveLength(2);
   });
 

@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { buildDataSourceOptions } from './config/database.config';
 import { loadAppConfig } from './config/app-config';
 import { Transaction } from './modules/transactions/entities/transaction.entity';
+import { Account } from './modules/accounts/entities/account.entity';
 import { TransactionProvider } from './core/provider/transaction-provider.interface';
 import { EventBus } from './events/events';
 import { MonobankClient } from './providers/monobank/monobank.client';
@@ -32,7 +33,7 @@ export const SHEETS_CLIENT = 'SHEETS_CLIENT';
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRootAsync({ useFactory: () => buildDataSourceOptions() }),
-    TypeOrmModule.forFeature([Transaction]),
+    TypeOrmModule.forFeature([Transaction, Account]),
   ],
   controllers: [AppController],
   providers: [
@@ -75,11 +76,11 @@ export const SHEETS_CLIENT = 'SHEETS_CLIENT';
     {
       provide: SyncService,
       useFactory: (
-        repo: Repository<Transaction>,
+        dataSource: DataSource,
         providers: TransactionProvider[],
         emitter: EventEmitter2,
-      ) => new SyncService(repo, providers, emitter as EventBus),
-      inject: [getRepositoryToken(Transaction), TRANSACTION_PROVIDERS, EventEmitter2],
+      ) => new SyncService(dataSource, providers, emitter as EventBus),
+      inject: [DataSource, TRANSACTION_PROVIDERS, EventEmitter2],
     },
   ],
 })

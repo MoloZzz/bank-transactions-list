@@ -11,6 +11,7 @@ const base: NormalizedTransaction = {
   type: TransactionType.TRANSFER,
   bookedAt: new Date('2025-06-01T10:00:00.000Z'),
   metadata: { mcc: 5411, description: 'Сільпо' },
+  account: { externalId: 'acc-1', maskedPan: '537541******1234' },
 };
 
 describe('transactionToSheetRow', () => {
@@ -19,6 +20,7 @@ describe('transactionToSheetRow', () => {
     expect(row).toEqual([
       '2025-06-01T10:00:00.000Z',
       'monobank',
+      '537541******1234',
       'transfer',
       '-450.00',
       'UAH',
@@ -36,9 +38,9 @@ describe('transactionToSheetRow', () => {
       decimals: 8,
       metadata: {},
     });
-    expect(row[3]).toBe('1.23456789');
-    expect(row[4]).toBe('BTC');
-    expect(row[6]).toBe(''); // no mcc
+    expect(row[4]).toBe('1.23456789');
+    expect(row[5]).toBe('BTC');
+    expect(row[7]).toBe(''); // no mcc
   });
 
   it('has a matching header width', () => {

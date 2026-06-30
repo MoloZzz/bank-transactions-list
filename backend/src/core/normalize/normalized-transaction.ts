@@ -1,4 +1,5 @@
 import { TransactionType } from '../../modules/transactions/enums/transaction-type.enum';
+import { NormalizedAccount } from './normalized-account';
 
 /**
  * Canonical, source-agnostic transaction. Every provider maps its raw rows into
@@ -22,5 +23,7 @@ export interface NormalizedTransaction {
   decimals: number;
   type: TransactionType;
   bookedAt: Date;
+  /** Source account/card this transaction belongs to (optional). */
+  account?: NormalizedAccount;
   metadata?: Record<string, unknown>;
 }

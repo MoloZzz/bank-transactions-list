@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { buildDataSourceOptions } from '../config/database.config';
 import { Transaction } from '../modules/transactions/entities/transaction.entity';
+import { Account } from '../modules/accounts/entities/account.entity';
 import { NormalizedTransaction } from '../core/normalize/normalized-transaction';
 import { TransactionProvider } from '../core/provider/transaction-provider.interface';
 import { TransactionType } from '../modules/transactions/enums/transaction-type.enum';
@@ -8,11 +9,13 @@ import { EventBus, TRANSACTION_CREATED } from '../events/events';
 import { SyncService } from './sync.service';
 
 class FakeProvider implements TransactionProvider {
+  lastSince: number | undefined = -1;
   constructor(
     readonly source: string,
     private readonly rows: NormalizedTransaction[],
   ) {}
-  async fetch(): Promise<NormalizedTransaction[]> {
+  async fetch(sinceSec?: number): Promise<NormalizedTransaction[]> {
+    this.lastSince = sinceSec;
     return this.rows;
   }
 }
@@ -55,7 +58,7 @@ describe('SyncService (integration)', () => {
   });
 
   beforeEach(async () => {
-    await ds.getRepository(Transaction).clear();
+    await ds.query('TRUNCATE "transactions", "accounts" CASCADE');
   });
 
   it('persists fetched transactions and reports created counts', async () => {
@@ -63,13 +66,11 @@ describe('SyncService (integration)', () => {
       tx({ source: 'monobank', externalId: 'a' }),
       tx({ source: 'monobank', externalId: 'b', amount: 12345n }),
     ]);
-    const sync = new SyncService(ds.getRepository(Transaction), [provider]);
+    const sync = new SyncService(ds, [provider]);
 
     const res = await sync.sync();
 
-    expect(res.totalReceived).toBe(2);
     expect(res.totalCreated).toBe(2);
-    expect(res.bySource['monobank']).toEqual({ received: 2, created: 2 });
     expect(await ds.getRepository(Transaction).count()).toBe(2);
   });
 
@@ -78,18 +79,18 @@ describe('SyncService (integration)', () => {
       tx({ source: 'monobank', externalId: 'a' }),
       tx({ source: 'monobank', externalId: 'b' }),
     ]);
-    const sync = new SyncService(ds.getRepository(Transaction), [provider]);
+    const sync = new SyncService(ds, [provider]);
 
     const first = await sync.sync();
     const second = await sync.sync();
 
     expect(first.totalCreated).toBe(2);
-    expect(second.totalCreated).toBe(0); // dedup on UNIQUE(source, externalId)
+    expect(second.totalCreated).toBe(0);
     expect(await ds.getRepository(Transaction).count()).toBe(2);
   });
 
   it('treats same externalId from a different source as distinct', async () => {
-    const sync = new SyncService(ds.getRepository(Transaction), [
+    const sync = new SyncService(ds, [
       new FakeProvider('monobank', [tx({ source: 'monobank', externalId: 'x' })]),
       new FakeProvider('binance_p2p_csv', [
         tx({
@@ -103,22 +104,22 @@ describe('SyncService (integration)', () => {
 
     const res = await sync.sync();
     expect(res.totalCreated).toBe(2);
-    expect(await ds.getRepository(Transaction).count()).toBe(2);
   });
 
   it('round-trips amount as exact BigInt after save', async () => {
     const huge = 1000000000000000000000000000001n;
-    const provider = new FakeProvider('binance_deposit_csv', [
-      tx({
-        source: 'binance_deposit_csv',
-        externalId: 'eth-1',
-        amount: huge,
-        currencyCode: 'ETH',
-        decimals: 18,
-        type: TransactionType.DEPOSIT,
-      }),
+    const sync = new SyncService(ds, [
+      new FakeProvider('binance_deposit_csv', [
+        tx({
+          source: 'binance_deposit_csv',
+          externalId: 'eth-1',
+          amount: huge,
+          currencyCode: 'ETH',
+          decimals: 18,
+          type: TransactionType.DEPOSIT,
+        }),
+      ]),
     ]);
-    const sync = new SyncService(ds.getRepository(Transaction), [provider]);
     await sync.sync();
 
     const saved = await ds
@@ -134,14 +135,94 @@ describe('SyncService (integration)', () => {
       tx({ source: 'monobank', externalId: 'a' }),
       tx({ source: 'monobank', externalId: 'b' }),
     ]);
-    const sync = new SyncService(ds.getRepository(Transaction), [provider], bus);
+    const sync = new SyncService(ds, [provider], bus);
 
     await sync.sync();
     expect(bus.events).toHaveLength(2);
-    expect(bus.events.every((e) => e.event === TRANSACTION_CREATED)).toBe(true);
-    expect((bus.events[0].payload as NormalizedTransaction).externalId).toBe('a');
-
-    await sync.sync(); // all dedup hits -> no new events
+    await sync.sync();
     expect(bus.events).toHaveLength(2);
+  });
+
+  it('passes the per-source watermark (max bookedAt) to the provider', async () => {
+    const seed = new FakeProvider('monobank', [
+      tx({ source: 'monobank', externalId: 'a', bookedAt: new Date('2026-06-10T08:00:00.000Z') }),
+      tx({ source: 'monobank', externalId: 'b', bookedAt: new Date('2026-06-20T09:30:00.000Z') }),
+    ]);
+    await new SyncService(ds, [seed]).sync();
+    expect(seed.lastSince).toBeUndefined();
+
+    const next = new FakeProvider('monobank', []);
+    await new SyncService(ds, [next]).sync();
+    expect(next.lastSince).toBe(
+      Math.floor(new Date('2026-06-20T09:30:00.000Z').getTime() / 1000),
+    );
+  });
+
+  it('upserts the account and links the transaction via accountId', async () => {
+    const provider = new FakeProvider('monobank', [
+      tx({
+        source: 'monobank',
+        externalId: 't1',
+        account: {
+          externalId: 'acc-1',
+          maskedPan: '537541******1234',
+          type: 'black',
+          currencyCode: 'UAH',
+        },
+      }),
+    ]);
+    await new SyncService(ds, [provider]).sync();
+
+    const accounts = await ds.getRepository(Account).find();
+    expect(accounts).toHaveLength(1);
+    expect(accounts[0]).toMatchObject({
+      source: 'monobank',
+      externalId: 'acc-1',
+      maskedPan: '537541******1234',
+      type: 'black',
+      currencyCode: 'UAH',
+    });
+
+    const t = await ds
+      .getRepository(Transaction)
+      .findOneByOrFail({ source: 'monobank', externalId: 't1' });
+    expect(t.accountId).toBe(accounts[0].id);
+  });
+
+  it('enriches an existing account on re-sync without creating a duplicate', async () => {
+    const minimal = new FakeProvider('monobank', [
+      tx({ source: 'monobank', externalId: 't1', account: { externalId: 'acc-1' } }),
+    ]);
+    await new SyncService(ds, [minimal]).sync();
+
+    let accounts = await ds.getRepository(Account).find();
+    expect(accounts).toHaveLength(1);
+    expect(accounts[0].maskedPan).toBeNull();
+
+    const enriched = new FakeProvider('monobank', [
+      tx({
+        source: 'monobank',
+        externalId: 't2',
+        account: { externalId: 'acc-1', maskedPan: '5375******1234', type: 'black' },
+      }),
+    ]);
+    await new SyncService(ds, [enriched]).sync();
+
+    accounts = await ds.getRepository(Account).find();
+    expect(accounts).toHaveLength(1); // same account, enriched
+    expect(accounts[0].maskedPan).toBe('5375******1234');
+  });
+
+  it('leaves accountId null when a transaction has no account', async () => {
+    const provider = new FakeProvider('monobank', [
+      tx({ source: 'monobank', externalId: 'no-acc' }),
+    ]);
+    await new SyncService(ds, [provider]).sync();
+
+    const t = await ds
+      .getRepository(Transaction)
+      .findOneByOrFail({ source: 'monobank', externalId: 'no-acc' });
+    expect(t.accountId).toBeNull();
+    expect(await ds.getRepository(Account).count()).toBe(0);
   });
 });

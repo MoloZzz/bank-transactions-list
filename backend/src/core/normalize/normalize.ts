@@ -39,6 +39,7 @@ export function toNormalized(
     decimals: input.decimals,
     type: input.type,
     bookedAt: input.bookedAt,
+    account: input.account,
     metadata: input.metadata ?? {},
   };
 }

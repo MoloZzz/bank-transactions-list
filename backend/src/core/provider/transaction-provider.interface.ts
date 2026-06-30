@@ -13,6 +13,13 @@ export interface TransactionProvider {
   /** Stable provider key, e.g. 'monobank', 'binance_p2p_csv'. */
   readonly source: string;
 
-  /** Fetch + field-map the source into canonical transactions. */
-  fetch(): Promise<NormalizedTransaction[]>;
+  /**
+   * Fetch + field-map the source into canonical transactions.
+   *
+   * @param sinceSec Optional lower bound (unix seconds). The sync engine passes
+   * the watermark (latest already-stored transaction for this source) so a
+   * routine run only pulls what's new. When omitted (empty DB), the provider
+   * falls back to its own configured floor — a full backfill.
+   */
+  fetch(sinceSec?: number): Promise<NormalizedTransaction[]>;
 }

@@ -3,11 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { bigintTransformer } from '../../../common/transformers/bigint.transformer';
 import { TransactionType } from '../enums/transaction-type.enum';
+import { Account } from '../../accounts/entities/account.entity';
 
 /**
  * Persisted, source-agnostic transaction. Personal (single-user) tracker — no
@@ -20,6 +23,9 @@ import { TransactionType } from '../enums/transaction-type.enum';
  *  - #2 dates: `bookedAt` / `createdAt` are timestamptz, always stored in UTC.
  *  - #4 dedup: UNIQUE(source, externalId) makes sync idempotent.
  *
+ * `accountId` links to the source account/card (Account). Nullable: some sources
+ * (e.g. certain CSVs) have no account concept.
+ *
  * `metadata` (jsonb) is the extension point: Monobank `mcc`, raw provider
  * fields, and crypto P2P context (rate, fiatCost) live here — the card↔crypto
  * matching layer (CryptoPurchase) reads from it later without the providers
@@ -28,6 +34,7 @@ import { TransactionType } from '../enums/transaction-type.enum';
 @Entity('transactions')
 @Unique('uq_transactions_source_external', ['source', 'externalId'])
 @Index('idx_transactions_booked_at', ['bookedAt'])
+@Index('idx_transactions_account_booked_at', ['accountId', 'bookedAt'])
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -62,6 +69,14 @@ export class Transaction {
   /** Transaction time, UTC. */
   @Column('timestamptz')
   bookedAt: Date;
+
+  /** Source account/card this transaction belongs to (nullable). */
+  @Column('uuid', { nullable: true })
+  accountId: string | null;
+
+  @ManyToOne(() => Account, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'accountId' })
+  account?: Account | null;
 
   @Column('jsonb', { default: () => `'{}'::jsonb` })
   metadata: Record<string, unknown>;
