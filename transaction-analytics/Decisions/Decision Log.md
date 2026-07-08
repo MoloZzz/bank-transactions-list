@@ -65,3 +65,9 @@
 - **Google-клієнт через `google-auth-library` + Sheets REST**, легше за повний `googleapis`.
 - **`process.exitCode` замість `process.exit()`** в entrypoint — прибирає libuv-assert на
   Windows при завершенні з відкритими хендлами.
+
+## Процес / база знань
+- **Vault-sync примусово через git pre-commit** (`.githooks/pre-commit`, `core.hooksPath`):
+  коміт `backend/src|test` без зміни в `transaction-analytics/` блокується; обхід —
+  `SKIP_VAULT_CHECK=1` лише для zero-knowledge правок. Хук також блокує дублювання
+  статусу в `00 — Index.md` — єдине джерело правди про статус: [[Roadmap & Status]].

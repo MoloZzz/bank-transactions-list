@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "5065d8d1671cc824",
+        "id": "60d42e4f6fce9fd4",
         "type": "tabs",
         "children": [
           {
-            "id": "025f0b3f480777df",
+            "id": "a59d6a14ec7b5322",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Plans/Plan 00 — Bank CSV.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Plan 00 — Bank CSV"
+              "title": "New tab"
             }
           }
         ]
@@ -180,11 +176,14 @@
       "bases:Create new base": false
     }
   },
-  "active": "025f0b3f480777df",
+  "active": "a59d6a14ec7b5322",
   "lastOpenFiles": [
+    "Plans/Plan 06 — Insights.md",
+    "Plans/Plan 00 — Bank CSV.md",
+    "00 — Index.md.tmp.12104.16014d0364d3",
+    "00 — Index.md.tmp.12104.ed4d63ba66fd",
     "Roadmap & Status.md.tmp.17324.91801f568a8c",
     "Sources/Bank CSV.md",
-    "Plans/Plan 06 — Insights.md",
     "Plans/Plan 06 — Insights.md.tmp.14836.732f55cd3476",
     "Plans/Plan 05 — Alerts і Telegram.md",
     "Plans/Plan 05 — Alerts і Telegram.md.tmp.14836.4657737a468e",
@@ -195,7 +194,6 @@
     "Plans/Plan 02 — Гігієна даних.md",
     "Plans/Plan 01 — Категоризація.md",
     "Plans/Plan 01 — Категоризація.md.tmp.14836.fc7f93dd3fd5",
-    "Plans/Plan 00 — Bank CSV.md",
     "Plans",
     "Analytics & Control — Backlog.md",
     "Analytics & Control — Backlog.md.tmp.14836.868c38ce0a79",
@@ -214,9 +212,6 @@
     "Business/Requirements.md",
     "Business/Vision & Goals.md",
     "00 — Index.md",
-    "Decisions",
-    "Sources",
-    "Architecture",
     "Welcome.md"
   ]
 }

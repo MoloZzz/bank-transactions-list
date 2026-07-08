@@ -1,0 +1,29 @@
+#!/bin/sh
+# Vault-sync guard: код і база знань (transaction-analytics/) мають жити разом.
+# Обхід у виняткових випадках: SKIP_VAULT_CHECK=1 git commit ...  (або --no-verify)
+
+[ "$SKIP_VAULT_CHECK" = "1" ] && exit 0
+
+staged=$(git diff --cached --name-only)
+
+code_changed=$(echo "$staged" | grep -E '^backend/(src|test)/' | grep -v '^backend/dist/' || true)
+vault_changed=$(echo "$staged" | grep -E '^transaction-analytics/' || true)
+
+# 1) Змінюєш код — онови vault у тому ж коміті.
+if [ -n "$code_changed" ] && [ -z "$vault_changed" ]; then
+  echo "✖ pre-commit: змінено backend/src|test, але жодної зміни в transaction-analytics/." >&2
+  echo "  Онови мінімум 'Roadmap & Status.md' (статус/нюанси) і, якщо змінилась схема чи" >&2
+  echo "  архітектура, відповідну ноту в Architecture/. Нове рішення — у Decision Log." >&2
+  echo "  Якщо зміна коду справді не потребує vault (typo, rename) — SKIP_VAULT_CHECK=1." >&2
+  exit 1
+fi
+
+# 2) Index не має дублювати статус — єдине джерело правди 'Roadmap & Status.md'.
+index="transaction-analytics/00 — Index.md"
+if [ -f "$index" ] && grep -qE 'Наступне —|Кроки [0-9]' "$index"; then
+  echo "✖ pre-commit: '00 — Index.md' містить статус ('Наступне —' / 'Кроки N')." >&2
+  echo "  Статус живе лише в 'Roadmap & Status.md'. Прибери дубль з Index." >&2
+  exit 1
+fi
+
+exit 0
