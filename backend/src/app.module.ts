@@ -10,9 +10,10 @@ import { loadAppConfig } from './config/app-config';
 import { Transaction } from './modules/transactions/entities/transaction.entity';
 import { Account } from './modules/accounts/entities/account.entity';
 import { TransactionProvider } from './core/provider/transaction-provider.interface';
-import { EventBus } from './events/events';
 import { MonobankClient } from './providers/monobank/monobank.client';
 import { MonobankProvider } from './providers/monobank/monobank.provider';
+import { BinanceP2pProvider } from './providers/binance/binance-p2p.provider';
+import { BinanceDepositProvider } from './providers/binance/binance-deposit.provider';
 import { SheetsClient } from './subscribers/sheets/sheets-client.interface';
 import { GoogleSheetsClient } from './subscribers/sheets/google-sheets.client';
 import { NullSheetsClient } from './subscribers/sheets/null-sheets.client';
@@ -51,6 +52,16 @@ export const SHEETS_CLIENT = 'SHEETS_CLIENT';
             }),
           );
         }
+        if (cfg.binanceP2pCsvPath) {
+          providers.push(
+            new BinanceP2pProvider({ filePath: cfg.binanceP2pCsvPath }),
+          );
+        }
+        if (cfg.binanceDepositCsvPath) {
+          providers.push(
+            new BinanceDepositProvider({ filePath: cfg.binanceDepositCsvPath }),
+          );
+        }
         return providers;
       },
     },
@@ -79,7 +90,7 @@ export const SHEETS_CLIENT = 'SHEETS_CLIENT';
         dataSource: DataSource,
         providers: TransactionProvider[],
         emitter: EventEmitter2,
-      ) => new SyncService(dataSource, providers, emitter as EventBus),
+      ) => new SyncService(dataSource, providers, emitter),
       inject: [DataSource, TRANSACTION_PROVIDERS, EventEmitter2],
     },
   ],

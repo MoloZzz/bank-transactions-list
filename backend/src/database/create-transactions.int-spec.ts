@@ -28,7 +28,9 @@ describe('CreateTransactions migration (integration)', () => {
   });
 
   it('creates the transactions table via migration', async () => {
-    const rows = await ds.query(`SELECT to_regclass('public.transactions') AS t`);
+    const rows = await ds.query(
+      `SELECT to_regclass('public.transactions') AS t`,
+    );
     expect(rows[0].t).toBe('transactions');
   });
 
@@ -47,9 +49,9 @@ describe('CreateTransactions migration (integration)', () => {
 
     await repo.insert(base);
 
-    await expect(
-      repo.insert({ ...base, amount: -1n }),
-    ).rejects.toBeInstanceOf(QueryFailedError);
+    await expect(repo.insert({ ...base, amount: -1n })).rejects.toBeInstanceOf(
+      QueryFailedError,
+    );
 
     const count = await repo.count({
       where: { source: 'monobank', externalId: 'ext-1' },

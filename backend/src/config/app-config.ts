@@ -14,6 +14,10 @@ export interface AppConfig {
   monobankToken?: string;
   /** Backfill start (unix seconds). Full history => before the account opened. */
   monoSinceSec: number;
+  /** Path to an exported Binance P2P order history CSV, if configured. */
+  binanceP2pCsvPath?: string;
+  /** Path to an exported Binance (on-chain) deposit history CSV, if configured. */
+  binanceDepositCsvPath?: string;
   sheets: SheetsConfig;
 }
 
@@ -28,6 +32,8 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     monobankToken: env.MONOBANK_TOKEN || undefined,
     monoSinceSec: parseSinceSec(env),
+    binanceP2pCsvPath: env.BINANCE_P2P_CSV_PATH || undefined,
+    binanceDepositCsvPath: env.BINANCE_DEPOSIT_CSV_PATH || undefined,
     sheets: {
       serviceAccount: env.GOOGLE_SERVICE_ACCOUNT_JSON || undefined,
       spreadsheetId: env.SHEETS_SPREADSHEET_ID || undefined,

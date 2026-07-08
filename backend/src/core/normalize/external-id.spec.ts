@@ -18,6 +18,8 @@ describe('buildExternalId', () => {
   });
 
   it('is sensitive to part boundaries (no naive concatenation)', () => {
-    expect(buildExternalId(['12', '34'])).not.toBe(buildExternalId(['1', '234']));
+    expect(buildExternalId(['12', '34'])).not.toBe(
+      buildExternalId(['1', '234']),
+    );
   });
 });

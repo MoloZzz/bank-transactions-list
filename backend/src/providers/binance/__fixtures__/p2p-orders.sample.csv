@@ -1,0 +1,3 @@
+Order Number,Order Type,Asset Type,Fiat Type,Total Price,Price,Quantity,Time(UTC),Counterparty,Status
+20260601123456789,BUY,USDT,UAH,13380.00,41.80,320.00000000,2026-06-01 10:15:32,merchant_ivan,Completed
+20260603234567890,SELL,USDT,UAH,4190.00,41.90,100.00000000,2026-06-03 07:05:00,merchant_olena,Completed

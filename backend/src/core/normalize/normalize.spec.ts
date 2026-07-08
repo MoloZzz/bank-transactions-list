@@ -27,9 +27,13 @@ describe('toNormalized (invariant gate)', () => {
 
   it('rejects invalid decimals, dates, and empty required fields', () => {
     expect(() => toNormalized({ ...valid, decimals: 1.5 })).toThrow();
-    expect(() => toNormalized({ ...valid, bookedAt: new Date('nope') })).toThrow();
+    expect(() =>
+      toNormalized({ ...valid, bookedAt: new Date('nope') }),
+    ).toThrow();
     expect(() => toNormalized({ ...valid, source: '  ' })).toThrow(/source/);
-    expect(() => toNormalized({ ...valid, currencyCode: '' })).toThrow(/currencyCode/);
+    expect(() => toNormalized({ ...valid, currencyCode: '' })).toThrow(
+      /currencyCode/,
+    );
   });
 
   it('preserves provided metadata', () => {

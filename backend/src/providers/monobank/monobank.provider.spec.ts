@@ -2,10 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { MonobankProvider } from './monobank.provider';
 import { IMonobankClient } from './monobank.client';
-import {
-  MonobankClientInfo,
-  MonobankStatementItem,
-} from './monobank.types';
+import { MonobankClientInfo, MonobankStatementItem } from './monobank.types';
 import { TransactionType } from '../../modules/transactions/enums/transaction-type.enum';
 
 const sample: MonobankStatementItem[] = JSON.parse(
@@ -14,9 +11,10 @@ const sample: MonobankStatementItem[] = JSON.parse(
 
 const DAY = 86400;
 
-function fakeClient(
-  statementByCall: MonobankStatementItem[][],
-): { client: IMonobankClient; calls: Array<[number, number]> } {
+function fakeClient(statementByCall: MonobankStatementItem[][]): {
+  client: IMonobankClient;
+  calls: Array<[number, number]>;
+} {
   const calls: Array<[number, number]> = [];
   let i = 0;
   const client: IMonobankClient = {
@@ -58,7 +56,10 @@ describe('MonobankProvider', () => {
     expect(t0.type).toBe(TransactionType.TRANSFER);
     expect(t0.bookedAt.toISOString()).toBe('2025-06-01T10:00:00.000Z');
     expect(t0.metadata).toMatchObject({ mcc: 5411, accountId: 'acc-1' });
-    expect(t0.account).toMatchObject({ externalId: 'acc-1', currencyCode: 'UAH' });
+    expect(t0.account).toMatchObject({
+      externalId: 'acc-1',
+      currencyCode: 'UAH',
+    });
   });
 
   it('dedups the same item appearing in overlapping windows', async () => {

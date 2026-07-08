@@ -3,10 +3,7 @@ import { NormalizedTransaction } from '../../core/normalize/normalized-transacti
 import { toNormalized } from '../../core/normalize/normalize';
 import { TransactionType } from '../../modules/transactions/enums/transaction-type.enum';
 import { IMonobankClient, MonobankHttpError } from './monobank.client';
-import {
-  MonobankAccount,
-  MonobankStatementItem,
-} from './monobank.types';
+import { MonobankAccount, MonobankStatementItem } from './monobank.types';
 import { resolveCurrency } from './currency';
 import { generateWindows } from './window';
 

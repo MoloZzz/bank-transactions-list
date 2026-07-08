@@ -31,7 +31,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   // Set exit code rather than process.exit() so pending handles (the pg pool,
   // already closed via app.close) drain cleanly — process.exit() mid-close

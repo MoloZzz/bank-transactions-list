@@ -77,7 +77,8 @@ export class SyncService {
       .getRawOne<{ max: string | Date | null }>();
 
     if (!row?.max) return undefined;
-    const ms = row.max instanceof Date ? row.max.getTime() : Date.parse(row.max);
+    const ms =
+      row.max instanceof Date ? row.max.getTime() : Date.parse(row.max);
     return Math.floor(ms / 1000);
   }
 
@@ -135,7 +136,9 @@ export class SyncService {
         decimals: r.decimals,
         type: r.type,
         bookedAt: r.bookedAt,
-        accountId: r.account ? accountMap.get(r.account.externalId) ?? null : null,
+        accountId: r.account
+          ? (accountMap.get(r.account.externalId) ?? null)
+          : null,
         metadata: r.metadata ?? {},
       }),
     );

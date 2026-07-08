@@ -29,7 +29,9 @@ export class CreateTransactions1719660000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_transactions_booked_at"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_transactions_booked_at"`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "transactions"`);
   }
 }

@@ -91,7 +91,9 @@ describe('SyncService (integration)', () => {
 
   it('treats same externalId from a different source as distinct', async () => {
     const sync = new SyncService(ds, [
-      new FakeProvider('monobank', [tx({ source: 'monobank', externalId: 'x' })]),
+      new FakeProvider('monobank', [
+        tx({ source: 'monobank', externalId: 'x' }),
+      ]),
       new FakeProvider('binance_p2p_csv', [
         tx({
           source: 'binance_p2p_csv',
@@ -145,8 +147,16 @@ describe('SyncService (integration)', () => {
 
   it('passes the per-source watermark (max bookedAt) to the provider', async () => {
     const seed = new FakeProvider('monobank', [
-      tx({ source: 'monobank', externalId: 'a', bookedAt: new Date('2026-06-10T08:00:00.000Z') }),
-      tx({ source: 'monobank', externalId: 'b', bookedAt: new Date('2026-06-20T09:30:00.000Z') }),
+      tx({
+        source: 'monobank',
+        externalId: 'a',
+        bookedAt: new Date('2026-06-10T08:00:00.000Z'),
+      }),
+      tx({
+        source: 'monobank',
+        externalId: 'b',
+        bookedAt: new Date('2026-06-20T09:30:00.000Z'),
+      }),
     ]);
     await new SyncService(ds, [seed]).sync();
     expect(seed.lastSince).toBeUndefined();
@@ -191,7 +201,11 @@ describe('SyncService (integration)', () => {
 
   it('enriches an existing account on re-sync without creating a duplicate', async () => {
     const minimal = new FakeProvider('monobank', [
-      tx({ source: 'monobank', externalId: 't1', account: { externalId: 'acc-1' } }),
+      tx({
+        source: 'monobank',
+        externalId: 't1',
+        account: { externalId: 'acc-1' },
+      }),
     ]);
     await new SyncService(ds, [minimal]).sync();
 
@@ -203,7 +217,11 @@ describe('SyncService (integration)', () => {
       tx({
         source: 'monobank',
         externalId: 't2',
-        account: { externalId: 'acc-1', maskedPan: '5375******1234', type: 'black' },
+        account: {
+          externalId: 'acc-1',
+          maskedPan: '5375******1234',
+          type: 'black',
+        },
       }),
     ]);
     await new SyncService(ds, [enriched]).sync();
