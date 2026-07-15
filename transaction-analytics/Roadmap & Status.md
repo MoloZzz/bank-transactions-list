@@ -11,8 +11,9 @@
   пагінація, подія `transaction.created`, Sheets subscriber. → [[Monobank]], [[Sync Engine]],
   [[Events & Export]]
 - [x] **4. Crypto CSV provider** (P2P + deposit формати) → крипта в БД. → [[Crypto CSV]]
-- [ ] **5. Метчинг card↔crypto + CryptoPurchase** ← **наступне** → [[Card↔Crypto Matching]]
-- [ ] **6. Estimate для unmatched (курс НБУ)** → [[Card↔Crypto Matching]]
+- [x] **5. Метчинг card↔crypto + CryptoPurchase** (P2P BUY, `npm run match`) →
+  [[Card↔Crypto Matching]]
+- [ ] **6. Estimate для unmatched (курс НБУ)** ← **наступне** → [[Card↔Crypto Matching]]
 - [ ] **7. Bank CSV** (Privat, generic) → [[Bank CSV]]
 
 ## Додатково зроблено (поза початковим списком)
@@ -26,22 +27,26 @@
 не порушено жоден [[Invariants|інваріант]] + можна запустити ізольовано й побачити результат.
 
 ## Поточні тести
-Unit ~62 (з них ~30 нових на Binance CSV: parser/scale/hash/tradeRef/обидва формати),
-інтеграційні ~13 + 3 нових (Crypto CSV import → Postgres, не прогнані локально — нема
-Docker у sandbox, де писався код; мають прогнатись у звичайному dev-оточенні через
-`npm run db:up && npm run test:int`), `tsc` чистий, `nest build` чистий.
+Unit **75** (з них ~30 на Binance CSV: parser/scale/hash/tradeRef/обидва формати; **13**
+нові на `chooseCardMatch` — вікно/сума/tie-break/детермінізм), інтеграційні **21** (проти
+реального Postgres, включно з Crypto CSV import і **5** новими на `MatchingService`:
+матч/no-match/поза вікном/ідемпотентність+manualOverride/1-до-1). Прогнано — усі зелені;
+`tsc` чистий. Локально: `npm run db:up && npm run test:int`.
 
 ## Відомі нюанси
 - Перший Monobank-бекфіл довгий (1 запит/60с) — це ліміт API, не баг. Обмежити: `MONO_SINCE`.
 - Синк — знімок на час старту; свіже підбере наступний прогін. → [[Sync Engine]]
 - Existing рядки до фіксу валюти чиняться SQL-пропагацією з `accounts`. → [[Decision Log]]
-- **Crypto CSV int-тест не прогнаний проти реального Postgres** у середовищі, де писався
-  код (немає Docker у sandbox) — лише `tsc`/unit/`lint`/`build` перевірені локально.
-  Потрібно прогнати `npm run test:int` у звичайному dev-оточенні перед тим, як вважати
-  крок 4 остаточно підтвердженим. → [[Crypto CSV]]
+- Crypto CSV інтеграційний тест **прогнано проти реального Postgres — зелений** (входить у
+  21/21 int). Раніше в sandbox без Docker не був прогнаний; тепер підтверджено. → [[Crypto CSV]]
 - `npm run lint` має ~23 передіснуючі помилки в файлах, яких цей крок не торкався
   (`monobank.provider.spec.ts`, `sheet-row.ts`, `null-sheets.client.ts`,
   `sync.command.ts`, `sync/sync.service.int-spec.ts`, `database/*.int-spec.ts`,
   `main.ts`) — технічний борг з попередніх кроків, не зі Crypto CSV. Увесь новий/змінений
   код (`providers/binance/**`, `app.module.ts`, `config/app-config.ts`) — лінтується
   чисто.
+- **Крок 5 (метчинг) — скоуп лише P2P BUY.** SELL і deposit-estimate (курс НБУ) — поза
+  скоупом, це крок 6. `MatchingService` читає лише `binance_p2p_csv`/`buy` та
+  `monobank`-дебети (`amount < 0`); нові джерела карток/крипти під ці правила не
+  підпадають автоматично — це буде явним рішенням кроку 6/7, не побічним ефектом.
+  → [[Card↔Crypto Matching]]

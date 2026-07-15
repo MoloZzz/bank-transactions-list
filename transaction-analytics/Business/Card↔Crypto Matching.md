@@ -10,7 +10,7 @@
 
 ## Два сценарії
 
-### 1. P2P-купівля (є метч card → crypto)
+### 1. P2P-купівля (є метч card → crypto) — реалізовано, крок 5
 Binance **P2P CSV** містить: fiat-суму, курс, кількість USDT.
 Метч прив'язує **картковий debit** до крипто-припливу, якщо:
 - `|cardAmount − fiatCost| ≤ tolerance` (суми збігаються в межах допуску);
@@ -18,13 +18,13 @@ Binance **P2P CSV** містить: fiat-суму, курс, кількість 
 
 Курс беремо **з CSV** — нічого не рахуємо самі.
 
-### 2. Обмінник / депозит без картки (no match)
+### 2. Обмінник / депозит без картки (no match) — крок 6, не реалізовано
 Крипто-депозит on-chain без відповідного карткового дебету.
 - `fiat = cryptoAmount × курс(дата)`;
 - USDT ≈ $1; USD/UAH беремо з **NBU API** на дату транзакції;
 - позначаємо `rateSource = NBU`, і що це **estimate** (оцінка, не факт).
 
-## Що зберігаємо — `CryptoPurchase` (майбутня сутність)
+## Що зберігаємо — `CryptoPurchase`
 | поле | сенс |
 |---|---|
 | `cryptoTxId` | посилання на крипто-транзакцію (приплив) |
@@ -48,6 +48,7 @@ Binance **P2P CSV** містить: fiat-суму, курс, кількість 
 - Крипто-бік: [[Crypto CSV]] (P2P зберігає курс+fiatCost у `metadata`).
 
 ## Статус
-Не реалізовано. Це **крок 5–6** у [[Roadmap & Status]]. Схема БД навмисно лишає місце
-під це (jsonb `metadata`, зв'язок ніг крипто-трейду через `tradeRef`), нічого
-переробляти не доведеться. → [[Data Model]]
+Статус кроків — лише в [[Roadmap & Status]] (єдине джерело правди). Реалізація:
+`src/modules/crypto-purchases/entities/crypto-purchase.entity.ts`,
+`src/matching/match-selection.ts` (чиста функція вибору) +
+`src/matching/matching.service.ts` (I/O, апсерт), entrypoint `npm run match`.

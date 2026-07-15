@@ -26,7 +26,8 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "sync": "ts-node src/sync.command.ts"
+    "sync": "ts-node src/sync.command.ts",
+    "match": "ts-node src/match.command.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

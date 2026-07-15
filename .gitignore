@@ -1,0 +1,4 @@
+# Local agent tooling — binaries are machine-specific, not for the repo
+tools/rtk
+tools/rtk-cli
+tools/*.tar.gz

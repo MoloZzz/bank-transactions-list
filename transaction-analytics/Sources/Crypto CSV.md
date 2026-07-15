@@ -1,6 +1,6 @@
 # Crypto CSV
 
-Джерело крипти з Binance CSV. **Реалізовано** — крок 4 (`backend/src/providers/binance/`).
+Джерело крипти з Binance CSV (`backend/src/providers/binance/`). Статус — [[Roadmap & Status]].
 → [[Roadmap & Status]]
 
 ## Два провайдери (кожен = окремий parser + окремий `source`)

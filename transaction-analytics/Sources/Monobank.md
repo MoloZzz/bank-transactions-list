@@ -1,6 +1,6 @@
 # Monobank
 
-Personal API, джерело `monobank`. Реалізовано: `src/providers/monobank/*`. ✅
+Personal API, джерело `monobank` (`src/providers/monobank/*`). Статус — [[Roadmap & Status]].
 
 ## API
 - База `https://api.monobank.ua`, заголовок `X-Token: <token>` (з `.env`, → [[Invariants]] #7).

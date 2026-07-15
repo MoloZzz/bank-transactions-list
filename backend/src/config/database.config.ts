@@ -1,6 +1,7 @@
 import { DataSourceOptions } from 'typeorm';
 import { Transaction } from '../modules/transactions/entities/transaction.entity';
 import { Account } from '../modules/accounts/entities/account.entity';
+import { CryptoPurchase } from '../modules/crypto-purchases/entities/crypto-purchase.entity';
 
 /**
  * Single source of truth for DB connection options, used by BOTH the Nest
@@ -17,7 +18,7 @@ export function buildDataSourceOptions(
     url:
       env.DATABASE_URL ??
       'postgres://postgres:postgres@localhost:5432/transactions',
-    entities: [Transaction, Account],
+    entities: [Transaction, Account, CryptoPurchase],
     migrations: [__dirname + '/../database/migrations/*.{ts,js}'],
     synchronize: false,
     migrationsRun: false,

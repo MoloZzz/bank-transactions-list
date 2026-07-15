@@ -26,9 +26,9 @@ interface TransactionProvider {
 - `toNormalized` — гейт інваріантів.
 
 ## Реалізації
-- **[[Monobank]]** — API, вікна, rate-limit, крос-валюта. ✅
+- **[[Monobank]]** — API, вікна, rate-limit, крос-валюта.
 - **[[Crypto CSV]]** — Binance P2P + deposit (`binance_p2p_csv` / `binance_deposit_csv`,
-  два CSV-провайдери + спільні хелпери). ✅
+  два CSV-провайдери + спільні хелпери).
 - **[[Bank CSV]]** — Privat/generic (пізніше, крок 7).
 
 ## Реєстрація
