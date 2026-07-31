@@ -35,7 +35,8 @@
     "vault:show": "node ../tools/vault/v.mjs show",
     "vault:brief": "node ../tools/vault/v.mjs brief",
     "vault:log": "node ../tools/vault/v.mjs log",
-    "vault:decide": "node ../tools/vault/v.mjs decide"
+    "vault:decide": "node ../tools/vault/v.mjs decide",
+    "vault:ctx": "node ../tools/vault/v.mjs ctx"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

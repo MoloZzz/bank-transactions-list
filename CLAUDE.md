@@ -26,8 +26,8 @@ for a precise partial `Read`.
 **L4 — full `Read`: only when about to EDIT that note.** A `PostToolUse` hook logs every full
 note read; `vault log` reports L4 reads against L3 calls.
 
-**Before editing `backend/src`, read `_gen/code-map.txt`** (45 files → exported symbols,
-generated) instead of grepping. Never read `backend/dist/`.
+**Before editing `backend/src` or `tools/vault`, read `_gen/code-map.txt`** (file → exported
+symbols, generated) instead of grepping. Never read `backend/dist/`.
 
 **Subagents:** pass refs (`Data Model#5`), never paste note bodies. `SubagentStart` primes them;
 `vault brief <ref>...` adds named sections in one call.
@@ -67,11 +67,31 @@ check      validate; writes NOTHING (this is the git hook)
 pin <note>                       re-pin rev: after the code it describes changed
 decide "<line>" --section <sub>  append a row to Decision Log
 log [--misses]                   retrieval misses, truncations, L4 reads
+ctx [--all] [--strict]           where this session's tokens went; exit 1 over budget
 ```
-From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide`.
+From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide|ctx`.
 
 Use `decide` for **rejected** approaches too — what a previous agent tried and discarded has no
 other home in the vault, and it is the thing most often re-derived from scratch.
+
+## Context budget — 50k per session, measured by `vault ctx`
+
+Profiled on a real 282k session: this file plus the L1 pack were **under 1%** of it. Retrieval was
+never the expensive part — the work is, and 22% was harness injections nobody typed. Run
+`vault ctx` when a session feels heavy; it names the specific calls to change.
+
+1. **One roadmap step per session.** The vault *is* the handoff — `brief` in, note edits +
+   `decide` out, then clear the context. A 250k session is ten tasks that should have been five
+   sessions; nothing is lost, because the durable state is in `transaction-analytics/`.
+2. **Subagent reports ≤30 lines:** `file:line`, refs, decisions, what failed. Never code bodies,
+   never a restated plan. A 12k-token report costs more than the delegation saved — the refs rule
+   applies to what comes **back**, not only what goes in.
+3. **Plans live in a file.** Iterate with `Edit`; `ExitPlanMode` gets a summary plus the path.
+   Three full submissions of one plan cost 34k here.
+4. **`Edit`, never `Write`, on a file that already exists** — measured 293 vs 1,610 tok/call. A
+   rewritten file leaves its entire superseded body in context for the rest of the session.
+5. **Close and delete finished tasks.** Every reminder re-injects the *whole* list (23k tok over
+   31 injections in one session). Durable status belongs in [[Roadmap & Status]], not a task list.
 
 ## Definition of Done (every task)
 Canon: [[Roadmap & Status]] § «Definition of Done», plus `vault check` clean. Not duplicated

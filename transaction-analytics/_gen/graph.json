@@ -2,7 +2,7 @@
   "version": 1,
   "metrics": {
     "notes": 25,
-    "linkOccurrences": 180,
+    "linkOccurrences": 181,
     "distinctTargets": 24,
     "dangling": 0,
     "caseMismatch": 0,
@@ -65,7 +65,7 @@
       "rel": "Decisions/Decision Log.md",
       "type": "decision",
       "inDeg": 6,
-      "outDeg": 18
+      "outDeg": 19
     },
     {
       "name": "Events & Export",
@@ -754,6 +754,13 @@
       "anchor": null,
       "embed": false,
       "line": 103
+    },
+    {
+      "from": "Decision Log",
+      "to": "Roadmap & Status",
+      "anchor": null,
+      "embed": false,
+      "line": 115
     },
     {
       "from": "Decision Log",
