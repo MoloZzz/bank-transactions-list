@@ -12,6 +12,9 @@ import * as path from 'node:path';
 import { VAULT_DIR, GEN_DIR, readText, readTextOrNull, exists, sortBy, cmp, norm, expandPatterns, digestFiles } from './fs.mjs';
 import { stagedPaths, worktreeDirty, git } from './git.mjs';
 import { stripFences } from './notes.mjs';
+// Safe to import statically: search.mjs is read-only apart from the gitignored
+// retrieval log, which only find/show/brief touch — never rank/resolveRef.
+import { rank, resolveRef, RefError } from './search.mjs';
 
 /**
  * Promotion table. Flip a value to 'error' once `check` reports zero for it.
@@ -25,11 +28,16 @@ export const SEVERITY = {
   'test-only': 'error',             // .only committed = silently skipped suite
   'legacy-code-without-vault': 'error',
   'legacy-index-status': 'error',
+  'retrieval-regression': 'error', // green on all 15 rows of _retrieval.tsv
+  // Blocks a commit touching code a note describes until that note is reviewed
+  // and re-pinned. The ONLY rule that catches a note which agrees with the code
+  // yet documents an approach that was abandoned; at 'warn' it is inert in
+  // practice, which is why it is here. Escape: SKIP_VAULT_CHECK=1.
+  'rev-stale': 'error',
 
   'note-unreachable': 'warn',
   'note-orphan': 'warn',
   'env-undocumented': 'warn',
-  'rev-stale': 'warn',
   'autoblock-stale': 'warn',
   'status-leak': 'warn',
   'stale-planned': 'warn',
@@ -132,6 +140,7 @@ export function collectFindings(ctx) {
 
   out.push(...factRules(ctx));
   out.push(...stepRules(ctx));
+  out.push(...retrievalRules(ctx));
   out.push(...legacyRules(ctx));
 
   return sortBy(out, (x) => `${x.severity}:${x.rule}:${x.where || ''}`);
@@ -216,6 +225,62 @@ function stepRules(ctx) {
           out.push(f('step-plan-drift', planNote, `roadmap step ${step} is [x] but this plan still has ${open.length} unchecked criteria (lines ${open.map((o) => o.i + 1).join(',')})`));
         }
       }
+    }
+  }
+  return out;
+}
+
+// ---- _retrieval.tsv: query / expected_ref / mode
+/**
+ * Guards that search stays GOOD, not merely that the vault stays consistent.
+ * Everything else here checks the corpus against itself or against the code;
+ * nothing else notices when a `synonyms.tsv` edit or a weight change silently
+ * degrades every future retrieval.
+ *
+ * Safe under the no-write contract: search.mjs only reads.
+ */
+function retrievalRules(ctx) {
+  const raw = readTextOrNull(path.resolve(ctx.root, VAULT_DIR, '_retrieval.tsv'));
+  if (!raw) return [];
+
+  const rows = [];
+  for (const line of raw.split('\n')) {
+    if (!line.trim() || line.startsWith('#')) continue;
+    const [query, expected, mode] = line.split('\t').map((s) => (s || '').trim());
+    if (query && expected) rows.push({ query, expected, mode: mode || 'top' });
+  }
+  if (!rows.length) return [];
+
+  const out = [];
+  for (const { query, expected, mode } of rows) {
+    let want;
+    try {
+      want = resolveRef(ctx.notes, expected);
+    } catch (err) {
+      if (err instanceof RefError) {
+        out.push(f('retrieval-regression', expected, `expected ref no longer resolves: ${err.message}`));
+        continue;
+      }
+      throw err;
+    }
+
+    const hits = rank(ctx.root, ctx.notes, query, 8);
+    // A note-level expectation is satisfied by any hit in that note; an
+    // anchored expectation needs that exact heading.
+    const matches = (h) =>
+      h.note.rel === want.note.rel && (want.headingIndex === null || h.headingIndex === want.headingIndex);
+
+    const at = hits.findIndex(matches);
+    const actual = hits.length
+      ? hits[0].headingIndex === null
+        ? hits[0].note.rel
+        : `${hits[0].note.rel}#${hits[0].note.headings[hits[0].headingIndex].text}`
+      : '(no hits)';
+
+    if (at === -1) {
+      out.push(f('retrieval-regression', query, `expected '${expected}' in top 8, absent. #1 is '${actual}'`));
+    } else if (mode === 'top' && at !== 0) {
+      out.push(f('retrieval-regression', query, `expected '${expected}' at #1, found at #${at + 1}. #1 is '${actual}'`));
     }
   }
   return out;

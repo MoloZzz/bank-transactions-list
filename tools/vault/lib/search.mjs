@@ -20,6 +20,7 @@
 import * as path from 'node:path';
 import { VAULT_DIR, GEN_DIR, readText, readTextOrNull, cmp, sortBy, norm } from './fs.mjs';
 import { loadNotes } from './notes.mjs';
+import { logEvent } from './log.mjs';
 
 const DEFAULT_MAX_LINES = 120;
 
@@ -83,19 +84,61 @@ const W = { name: 10, heading: 8, fact: 7, summary: 6, body: 2 };
 const BODY_HIT_CAP = 3;
 const SYNONYM_DISCOUNT = 0.75;
 const PREFIX_DISCOUNT = 0.6;
+const MIN_PREFIX = 3;
+// Floor below which a hit is noise, not a weak answer. A single exact name
+// token on a 3-word query scores ~1.1 (10 x coverage (1/3)^2), so this keeps
+// legitimate partial matches while cutting the long tail. Without it `find`
+// never returns empty, so a miss can never be observed — and the whole point
+// of the log is to observe misses.
+const MIN_SCORE = 1.0;
 
 /** Score one query token against a bag of index tokens. Exact hit = 1,
- *  prefix hit (>=3 chars) = 0.6, else 0. */
+ *  prefix hit = 0.6, else 0.
+ *
+ *  BOTH sides need the length floor. Requiring it only on the query token let
+ *  a 2-char bag token ("no", from "no match") prefix-match any query word
+ *  beginning with those letters, which meant every garbage query still
+ *  returned hits. */
 function tokenHit(queryToken, bag) {
   if (bag.has(queryToken)) return 1;
-  if (queryToken.length >= 3) {
-    for (const t of bag) if (t.startsWith(queryToken) || queryToken.startsWith(t)) return PREFIX_DISCOUNT;
+  if (queryToken.length >= MIN_PREFIX) {
+    for (const t of bag) {
+      if (t.length < MIN_PREFIX) continue;
+      if (t.startsWith(queryToken) || queryToken.startsWith(t)) return PREFIX_DISCOUNT;
+    }
   }
   return 0;
 }
 
 function bagOf(text) {
   return new Set(tokenize(text));
+}
+
+/**
+ * Per-note token bags, memoized on the note object.
+ *
+ * `retrieval-regression` runs every row of `_retrieval.tsv` through `rank()`
+ * inside the pre-commit hook — ~15 queries x 25 notes, each of which used to
+ * re-tokenize the entire note body and every heading. The notes array is
+ * loaded once per process, so keying on the note object gives a hit for every
+ * query after the first. A WeakMap means a reload (new objects) transparently
+ * invalidates.
+ */
+const bagCache = new WeakMap();
+
+function bagsOf(note, factKeys) {
+  let bags = bagCache.get(note);
+  if (!bags) {
+    bags = {
+      name: bagOf(`${note.name} ${note.rel}`),
+      summary: bagOf(note.data?.summary || ''),
+      body: bagOf(note.body),
+      fact: bagOf(factKeys.join(' ')),
+      headings: note.headings.map((h) => bagOf(h.text)),
+    };
+    bagCache.set(note, bags);
+  }
+  return bags;
 }
 
 function loadFactKeys(root) {
@@ -124,11 +167,9 @@ export function rank(root, notes, query, limit = 8) {
   const results = [];
 
   for (const note of notes) {
-    const nameBag = bagOf(`${note.name} ${note.rel}`);
-    const summaryBag = bagOf(note.data?.summary || '');
-    const bodyBag = bagOf(note.body);
-    const factsForNote = facts.filter((f) => f.owner.split('#')[0] === note.rel);
-    const factBag = bagOf(factsForNote.map((f) => f.key).join(' '));
+    const factKeys = facts.filter((f) => f.owner.split('#')[0] === note.rel).map((f) => f.key);
+    const bags = bagsOf(note, factKeys);
+    const { name: nameBag, summary: summaryBag, body: bodyBag, fact: factBag } = bags;
 
     // ---- note-level score
     let noteScore = 0;
@@ -161,7 +202,7 @@ export function rank(root, notes, query, limit = 8) {
     // ---- heading-level score (these are the L3 addresses we actually want)
     note.headings.forEach((h, i) => {
       if (h.level < 2) return; // H1 is the note title, already covered
-      const hBag = bagOf(h.text);
+      const hBag = bags.headings[i];
       let hs = 0;
       const hMatched = new Set();
       for (const [tok, isOriginal] of expanded) {
@@ -181,6 +222,7 @@ export function rank(root, notes, query, limit = 8) {
   }
 
   return results
+    .filter((r) => r.score >= MIN_SCORE)
     .sort((a, b) => b.score - a.score || cmp(a.note.rel, b.note.rel) || (a.headingIndex ?? -1) - (b.headingIndex ?? -1))
     .slice(0, limit);
 }
@@ -279,9 +321,20 @@ export function find(root, query, flags = {}) {
   const hits = rank(root, notes, query, limit);
 
   if (!hits.length) {
+    // A miss is the single most actionable signal the log carries: it names a
+    // vocabulary gap between how agents ask and how the vault is written.
+    logEvent(root, { cmd: 'find', arg: query, outcome: 'miss', detail: '' });
     process.stderr.write(`vault find: no match for '${query}'\n`);
     return 1;
   }
+
+  const top = hits[0];
+  logEvent(root, {
+    cmd: 'find',
+    arg: query,
+    outcome: 'hit',
+    detail: `n=${hits.length} top=${top.headingIndex === null ? top.note.rel : `${top.note.rel}#${headingNumber(top.note, top.headingIndex)}`}`,
+  });
 
   if (flags.json) {
     process.stdout.write(
@@ -326,16 +379,34 @@ export function show(root, ref, flags = {}) {
     resolved = resolveRef(notes, ref);
   } catch (err) {
     if (err instanceof RefError) {
+      logEvent(root, {
+        cmd: 'show',
+        arg: ref,
+        outcome: /ambiguous/.test(err.message) ? 'ambiguous' : 'miss',
+        detail: err.message,
+      });
       process.stderr.write(`vault show: ${err.message}\n`);
       if (err.candidates.length) process.stderr.write(err.candidates.slice(0, 40).join('\n') + '\n');
       return 2;
     }
     throw err;
   }
-  process.stdout.write(renderSection(resolved, flags));
+  const { text, truncated, remaining, title } = renderSection(resolved, flags);
+  logEvent(root, {
+    cmd: 'show',
+    arg: ref,
+    outcome: truncated ? 'truncated' : 'ok',
+    detail: truncated ? `${title} +${remaining} lines` : title,
+  });
+  process.stdout.write(text);
   return 0;
 }
 
+/**
+ * Render one section. Returns stats alongside the text because `truncated` is
+ * the log's proxy for an L3->L4 escalation — the caller has to be able to see
+ * it without re-parsing the output.
+ */
 function renderSection({ note, headingIndex }, flags = {}) {
   const maxLines = Number(flags['max-lines'] || DEFAULT_MAX_LINES);
   let startLine, endLine, title;
@@ -357,8 +428,8 @@ function renderSection({ note, headingIndex }, flags = {}) {
   if (flags.ctx) parts.push(`summary: ${summaryOf(note)}`);
   parts.push(shown.join('\n').replace(/\s+$/, ''));
 
-  if (all.length > shown.length) {
-    const remaining = all.length - shown.length;
+  const remaining = all.length - shown.length;
+  if (remaining > 0) {
     const nextLine = startLine + shown.length;
     // This footer is what makes L3->L4 escalation ONE precise partial Read
     // instead of a full-file Read.
@@ -370,7 +441,7 @@ function renderSection({ note, headingIndex }, flags = {}) {
     if (outbound.length) parts.push(`links: ${sortBy([...new Set(outbound)]).join(', ')}`);
   }
 
-  return parts.join('\n') + '\n';
+  return { text: parts.join('\n') + '\n', title, truncated: remaining > 0, remaining };
 }
 
 /**
@@ -393,9 +464,22 @@ export function brief(root, refs, flags = {}) {
   for (const ref of refs) {
     process.stdout.write('\n' + '-'.repeat(60) + '\n');
     try {
-      process.stdout.write(renderSection(resolveRef(notes, ref), flags));
+      const { text, truncated, remaining, title } = renderSection(resolveRef(notes, ref), flags);
+      logEvent(root, {
+        cmd: 'brief',
+        arg: ref,
+        outcome: truncated ? 'truncated' : 'ok',
+        detail: truncated ? `${title} +${remaining} lines` : title,
+      });
+      process.stdout.write(text);
     } catch (err) {
       if (err instanceof RefError) {
+        logEvent(root, {
+          cmd: 'brief',
+          arg: ref,
+          outcome: /ambiguous/.test(err.message) ? 'ambiguous' : 'miss',
+          detail: err.message,
+        });
         process.stderr.write(`vault brief: ${err.message}\n`);
         code = 2;
       } else throw err;

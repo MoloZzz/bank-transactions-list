@@ -1,33 +1,38 @@
 # Financial Transactions Aggregator
 
-Персональний фінансовий трекер (1 користувач): збирає транзакції (Monobank API, CSV),
-нормалізує в одну модель, метчить картковий відтік з крипто-припливом (P2P), експортує
-в Google Sheets. Стек: NestJS + TypeORM + PostgreSQL. Код — у `backend/`. База знань —
-у `transaction-analytics/`.
+Personal finance tracker, single user. Pulls transactions (Monobank API, CSV), normalizes them
+into one model, matches card outflow against crypto inflow (P2P), exports to Google Sheets.
+Stack: NestJS + TypeORM + PostgreSQL. Code lives in `backend/`, the knowledge base in
+`transaction-analytics/`.
 
-## Retrieval — як читати базу знань (ЗАМІСТЬ читання нот підряд)
+Prose here is English (loaded on every request); note titles, headings and `[[wikilinks]]` stay
+Ukrainian — they are **addresses** for `find`/`show`/`Read`, and a translated address cannot
+resolve. Keep it that way when editing this file.
 
-**L1. Завжди перший крок будь-якої задачі — один Read:**
-`transaction-analytics/_gen/context.txt` (~800 токенів: інваріанти, статус, сутності,
-міграції, провайдери, env, тести, DoD). Це замінює обовʼязкове читання 4 нот.
+## Retrieval — how to read the knowledge base (INSTEAD of reading notes end to end)
 
-**L2. Знайти потрібне:** `node tools/vault/v.mjs find "<запит>"` — віддає ранжований
-список `path#N :: heading`. Запит можна писати англійською: є en↔uk місток.
+**L1 — injected automatically.** `SessionStart`/`SubagentStart` hooks (`.claude/settings.json`)
+feed you `_gen/context.txt`: invariants, status, entities, migrations, providers, env, tests, DoD.
+Do not re-read it; if it is missing, read that file first.
 
-**L3. Прочитати ОДНУ секцію:** `node tools/vault/v.mjs show "<ref>"`.
-Ref приймає `"Data Model#crypto_purchases"`, `"Data Model#5"` (позиційно) або
-`"matching#2"` (підрядок) — не треба вводити `↔`/`—` у шелл. Якщо секція обрізана,
-у футері будуть точні `offset`/`limit` для Read.
+**L2 — locate:** `node tools/vault/v.mjs find "<query>"` → ranked `path#N :: heading`.
+Query in English — `tools/vault/synonyms.tsv` is the en↔uk bridge.
 
-**L4. Повний Read ноти — лише коли збираєшся її РЕДАГУВАТИ.**
+**L3 — read ONE section:** `node tools/vault/v.mjs show "<ref>"`. Refs accept
+`"Data Model#crypto_purchases"`, `"Data Model#5"` (positional) or `"matching#2"` (substring), so
+you never type `↔` or `—` into a shell. A truncated section footer gives exact `offset`/`limit`
+for a precise partial `Read`.
 
-**Субагентам:** передавай рефи (`Data Model#5`), ніколи не вставляй тіла нот у промпт.
-Перший виклик субагента: `node tools/vault/v.mjs brief <ref>...` (context.txt + секції
-одним викликом).
+**L4 — full `Read`: only when about to EDIT that note.** A `PostToolUse` hook logs every full
+note read; `vault log` reports L4 reads against L3 calls.
 
-Не читати `backend/dist/`.
+**Before editing `backend/src`, read `_gen/code-map.txt`** (45 files → exported symbols,
+generated) instead of grepping. Never read `backend/dist/`.
 
-## Ключові інваріанти (генерується з `Architecture/Invariants.md` — не редагувати руками)
+**Subagents:** pass refs (`Data Model#5`), never paste note bodies. `SubagentStart` primes them;
+`vault brief <ref>...` adds named sections in one call.
+
+## Key invariants (generated from `Architecture/Invariants.md` — do not hand-edit)
 <!-- auto:invariants begin -->
 - 1. Гроші — ціле в мінорних одиницях, ніколи float
 - 2. Дати — UTC у БД
@@ -38,10 +43,9 @@ Ref приймає `"Data Model#crypto_purchases"`, `"Data Model#5"` (позиц
 - 7. Секрети — лише env/secrets
 <!-- auto:invariants end -->
 
-Повний текст і наслідки — [[Invariants]]. Розбіжність між цим блоком і нотою неможлива:
-блок генерується, `vault check` це стереже.
+Full text: [[Invariants]]. This block is generated, so it cannot diverge from the note.
 
-## Команди (з `backend/`)
+## Commands (from `backend/`)
 <!-- auto:cmds begin -->
 - `npm run build`
 - `npm run test`
@@ -53,51 +57,54 @@ Ref приймає `"Data Model#crypto_purchases"`, `"Data Model#5"` (позиц
 - `npm run db:up`
 <!-- auto:cmds end -->
 
-`npm run lint` — це `eslint --fix`, він **змінює файли**; ніколи не викликати з хука.
-Актуальні лічильники тестів — у `_gen/context.txt`, не в нотах.
+`npm run lint` is `eslint --fix` — it **modifies files**; never call it from a hook.
+Test counts live in `_gen/context.txt`, not in the notes.
 
-## Vault-тулінг
+## Vault tooling (`node tools/vault/v.mjs <cmd>`)
 ```
-node tools/vault/v.mjs build     # перегенерувати _gen/* і auto-блоки (ПИШЕ)
-node tools/vault/v.mjs check     # перевірити; НІЧОГО не пише (це і є хук)
-node tools/vault/v.mjs pin <нота>  # перепінити rev: після зміни коду
+build      regenerate _gen/* and auto-blocks (WRITES)
+check      validate; writes NOTHING (this is the git hook)
+pin <note>                       re-pin rev: after the code it describes changed
+decide "<line>" --section <sub>  append a row to Decision Log
+log [--misses]                   retrieval misses, truncations, L4 reads
 ```
-З `backend/` доступні як `npm run vault:build` / `vault:check` / `vault:find` /
-`vault:show` / `vault:brief`.
+From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide`.
 
-## Definition of Done (кожна задача)
-Канон — [[Roadmap & Status]], розділ «Definition of Done». Плюс: `vault check` без
-помилок. Тут DoD не дублюється (раніше існувало 3 розбіжні версії).
+Use `decide` for **rejected** approaches too — what a previous agent tried and discarded has no
+other home in the vault, and it is the thing most often re-derived from scratch.
 
-## Дисципліна vault (ПРИМУСОВО, перевіряється машиною)
-Задача НЕ вважається завершеною без оновлення vault — це частина DoD. Раніше це були
-прозові правила, які ніхто не перевіряв; тепер їх стереже `vault check`:
+## Definition of Done (every task)
+Canon: [[Roadmap & Status]] § «Definition of Done», plus `vault check` clean. Not duplicated
+here — there used to be 3 divergent versions.
 
-1. `Roadmap & Status.md` — **єдине джерело правди про статус**. Статусні дієслова
-   («реалізовано», «прогнано», «зелений») в інших нотах блокуються правилом
-   `status-leak`. Ярлик обсягу («крок 5») — можна, це не статус.
-2. Схема/сутності → `Architecture/Data Model.md`; sync/провайдери/події → відповідна
-   нота в `Architecture/`. Якщо нота має `code:`, зміна цього коду робить її `rev:`
-   несвіжим (`rev-stale`) — треба переглянути ноту й `vault pin`. Запінити ноту, якої
-   ти не редагував, не можна.
-3. Кожне нове архітектурне рішення → рядок у `Decisions/Decision Log.md`.
-4. Факт, що вже має власника в `_facts.tsv`, не переказувати без посилання на канон
-   (правило `fact-restated`).
-5. Крок roadmap і його план звіряються через `_steps.tsv`: закритий крок з
-   невідміченими критеріями плану — помилка.
-6. `_gen/*` комітиться разом зі змінами. Хук відхилить коміт зі стухлим `_gen`.
+## Vault discipline (ENFORCED — `vault check` guards every rule below)
+A task is not done until the vault is updated; that is part of DoD.
 
-Обхід у виняткових випадках: `SKIP_VAULT_CHECK=1 git commit ...` — і це треба
-обґрунтувати в повідомленні коміту.
+1. `Roadmap & Status.md` is the **only source of truth for status**. Status verbs
+   («реалізовано», «прогнано», «зелений») elsewhere trip `status-leak`. A scope label
+   («крок 5») is fine — that is not a status claim.
+2. Schema/entities → `Architecture/Data Model.md`; sync/providers/events → the matching
+   `Architecture/` note. Changing code under a note's `code:` makes its `rev:` stale
+   (`rev-stale` is an **error**, it blocks the commit): review the note, then `vault pin`.
+   You cannot pin a note you did not edit.
+3. Every new architectural decision → `vault decide`.
+4. A fact owned in `_facts.tsv` must not be restated without a canon pointer (`fact-restated`).
+5. Roadmap step ↔ plan are cross-checked via `_steps.tsv`: a closed step whose plan still has
+   unchecked criteria is an error.
+6. `_gen/*` is committed with the change; the hook rejects a stale `_gen`.
+7. `_retrieval.tsv` is the ranking baseline — edit `synonyms.tsv` or the weights and
+   `retrieval-regression` tells you what broke.
 
-## Setup після клонування
+Bypass: `SKIP_VAULT_CHECK=1 git commit ...`, justified in the commit message.
+
+## Setup after cloning
+`npm install` in `backend/` arms the git hook (`prepare` → `vault init-hooks`). By hand:
 ```bash
 git config core.hooksPath .githooks
 ```
 
-## RTK — компактний вивід bash-команд
-**Золоте правило: префіксуй bash-команди `tools/rtk`** (git/grep/find/ls/npm run/tsc/
-lint/jest). Якщо фільтр є — застосується, якщо нема — passthrough, тож це завжди
-безпечно. Працює і в ланцюжках через `&&`. Якщо `tools/rtk` відсутній:
-`cp tools/rtk-cli tools/rtk && chmod +x tools/rtk`.
-Повний довідник команд — `tools/rtk.md` (читати за потреби, не тримати в контексті).
+## RTK — compact output for bash commands
+**Golden rule: prefix bash commands with `tools/rtk`** (git/grep/find/ls/npm run/tsc/lint/jest).
+If a filter exists it applies, otherwise passthrough — always safe, works in `&&` chains. If
+missing: `cp tools/rtk-cli tools/rtk && chmod +x tools/rtk`. Full reference: `tools/rtk.md`
+(read on demand, do not keep it in context).

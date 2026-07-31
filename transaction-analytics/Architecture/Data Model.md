@@ -3,6 +3,7 @@ summary: Сутності, поля, типи, індекси, ERD і мігра
 code:
   - src/modules/**
   - src/database/migrations/**
+rev: a292e63eff06
 ---
 # Data Model
 

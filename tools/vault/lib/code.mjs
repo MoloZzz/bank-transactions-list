@@ -188,6 +188,64 @@ export function envVars(root) {
   return { used, documented, defaults, missing, undocumented };
 }
 
+/**
+ * Exported symbols per source file — the code-side counterpart to the note map.
+ *
+ * The vault indexes 25 notes; agents still entered `backend/src` blind and
+ * grepped. This is the same zero-token derivation applied to the surface that
+ * actually dominates token spend.
+ *
+ * Spec files are excluded: they export nothing an agent needs to address, and
+ * including them would roughly double the artifact for no retrieval value.
+ * The `kind` set is closed to the six forms that actually occur in this
+ * codebase; anything else is silently not a symbol, which is the right failure
+ * mode for a map (a missing line costs a grep, a wrong line costs trust).
+ */
+const EXPORT_RE =
+  /^export\s+(?:default\s+)?(abstract class|class|async function|function|const|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm;
+
+const KIND_TAG = {
+  'abstract class': 'cls',
+  class: 'cls',
+  'async function': 'fn',
+  function: 'fn',
+  const: 'const',
+  interface: 'iface',
+  type: 'type',
+  enum: 'enum',
+};
+
+export function codeMap(root) {
+  // Both spec flavours: `.int-spec.ts` does NOT match /\.spec\.ts$/, and letting
+  // them through adds a dozen symbol-less rows of pure noise.
+  const files = walk(root, `${BACKEND_DIR}/src`, { ext: '.ts' }).filter((f) => !/\.(int-)?spec\.ts$/.test(f));
+  const srcPrefix = `${BACKEND_DIR}/src/`;
+  const out = [];
+
+  for (const file of files) {
+    const text = readText(path.resolve(root, file));
+    const symbols = [];
+    for (const m of text.matchAll(new RegExp(EXPORT_RE.source, 'gm'))) {
+      symbols.push({ kind: KIND_TAG[m[1]], name: m[2] });
+    }
+    const rel = file.startsWith(srcPrefix) ? file.slice(srcPrefix.length) : file;
+    const dirname = path.posix.dirname(rel);
+    out.push({
+      file,
+      rel,
+      dir: dirname === '.' ? '' : dirname,
+      base: path.posix.basename(rel),
+      symbols,
+    });
+  }
+
+  // Sort by directory FIRST, then filename. Sorting on the full relative path
+  // interleaves root files with subdirectories ("main.ts" falls between
+  // "config/" and "matching/"), which splits a single directory into several
+  // headings in the rendered map.
+  return sortBy(out, (x) => `${x.dir} ${x.base}`);
+}
+
 /** `backend/package.json`'s `scripts` map, as-is. */
 export function npmScripts(root) {
   const text = readText(path.resolve(root, `${BACKEND_DIR}/package.json`));

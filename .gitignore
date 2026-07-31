@@ -2,3 +2,8 @@
 tools/rtk
 tools/rtk-cli
 tools/*.tar.gz
+
+# Retrieval feedback log — local observation, not repo state. Deliberately NOT
+# under transaction-analytics/_gen/, which `vault check` compares for freshness:
+# a file that mutates on every read would make the hook flap.
+tools/vault/.log.tsv

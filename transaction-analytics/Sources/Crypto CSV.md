@@ -2,6 +2,7 @@
 summary: Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.
 code:
   - src/providers/binance/**
+rev: 7a9c952b4991
 ---
 # Crypto CSV
 

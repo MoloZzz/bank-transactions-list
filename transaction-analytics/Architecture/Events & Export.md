@@ -3,6 +3,7 @@ summary: Подія transaction.created і Google Sheets subscriber; батч-ф
 code:
   - src/events/**
   - src/subscribers/**
+rev: bd171cbdae89
 ---
 # Events & Export
 

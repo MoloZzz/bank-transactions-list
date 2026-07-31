@@ -43,4 +43,5 @@ L2  node tools/vault/v.mjs find <query>    -> ranked path#N :: heading
 L3  node tools/vault/v.mjs show <ref>      -> one section + exact Read offsets if truncated
     refs accept "Data Model#crypto_purchases" | "Data Model#5" | "matching#2"
 L4  Read <path>  -- only when about to EDIT that note
+code  Read transaction-analytics/_gen/code-map.txt  -- before editing backend/src, instead of grepping
 subagents: pass refs, never pasted note bodies; first call is `brief <ref>...`

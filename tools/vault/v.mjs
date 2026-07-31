@@ -18,13 +18,17 @@ import * as path from 'node:path';
 
 const USAGE = `vault — knowledge base tooling
 
-  build [--seed-frontmatter] [--seed-facts] [--lint]   regenerate _gen/* and auto-blocks
+  build [--seed-frontmatter|--seed-facts|--seed-rev]   regenerate _gen/* and auto-blocks
   check [--staged] [--strict] [--rule <id>]            validate; writes nothing
   pin <note>                                           re-pin rev: (requires a staged edit)
   find <query> [--json] [-n N]                         ranked path#N :: heading
   show <ref> [--links] [--ctx] [--max-lines N]         print one section
   brief <ref>...                                       context.txt + named sections
   map                                                  dump map.tsv
+  log [--misses] [-n N] [--clear]                      retrieval misses / truncations
+  decide "<line>" --section <substring>                append a row to Decision Log
+  init-hooks                                           arm core.hooksPath (never fails)
+  hook session-start|subagent-start|post-read          Claude Code hook adapter
 
 Refs accept: "Data Model#crypto_purchases" | "Data Model#5" | "matching#2"
 `;
@@ -47,11 +51,34 @@ function parseArgs(argv) {
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '-n' || a === '--max-lines' || a === '--rule') flags[a.replace(/^-+/, '')] = argv[++i];
+    if (a === '-n' || a === '--max-lines' || a === '--rule' || a === '--section') flags[a.replace(/^-+/, '')] = argv[++i];
     else if (a.startsWith('--')) flags[a.slice(2)] = true;
     else positional.push(a);
   }
   return { flags, positional };
+}
+
+/**
+ * Arm the git hook. Wired to npm `prepare` in backend/package.json so a fresh
+ * clone gets enforcement from `npm install` instead of a documented manual step
+ * everyone forgets.
+ *
+ * MUST NOT THROW under any circumstance: a failing `prepare` script aborts the
+ * whole `npm install`, and this also runs in CI and in tarball installs where
+ * there may be no git repo at all. Failing to arm a hook is not worth breaking
+ * a developer's install over.
+ */
+function initHooks() {
+  try {
+    execFileSync('git', ['config', 'core.hooksPath', '.githooks'], {
+      cwd: repoRoot(),
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    process.stdout.write('vault: core.hooksPath -> .githooks\n');
+  } catch {
+    process.stdout.write('vault: skipped hook setup (no git repo or git unavailable)\n');
+  }
+  return 0;
 }
 
 async function main() {
@@ -60,6 +87,7 @@ async function main() {
     process.stderr.write(USAGE);
     return 2;
   }
+  if (cmd === 'init-hooks') return initHooks();
 
   const root = repoRoot();
   process.chdir(root);
@@ -96,6 +124,19 @@ async function main() {
     case 'map': {
       const { dumpMap } = await import('./lib/search.mjs');
       return dumpMap(root);
+    }
+    case 'log': {
+      const { report } = await import('./lib/log.mjs');
+      return report(root, flags);
+    }
+    case 'hook': {
+      const { hook } = await import('./lib/hook.mjs');
+      return hook(root, positional[0]);
+    }
+    case 'decide': {
+      const { decide } = await import('./lib/render.mjs');
+      if (!positional.length) throw new UsageError('decide requires the decision text');
+      return decide(root, positional.join(' '), flags);
     }
     default:
       process.stderr.write(`vault: unknown command '${cmd}'\n\n${USAGE}`);

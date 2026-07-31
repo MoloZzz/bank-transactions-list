@@ -149,49 +149,49 @@
       "name": "Data Model",
       "type": "architecture",
       "summary": "Сутності, поля, типи, індекси, ERD і міграції. Гроші — numeric(38,0) на BigInt.",
-      "rev": null,
+      "rev": "a292e63eff06",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "ERD",
-          "line": 12,
-          "endLine": 66
+          "line": 13,
+          "endLine": 67
         },
         {
           "n": 2,
           "level": 2,
           "text": "`transactions`",
-          "line": 67,
-          "endLine": 79
+          "line": 68,
+          "endLine": 80
         },
         {
           "n": 3,
           "level": 2,
           "text": "`accounts`",
-          "line": 80,
-          "endLine": 84
+          "line": 81,
+          "endLine": 85
         },
         {
           "n": 4,
           "level": 2,
           "text": "`crypto_purchases` (крок 5)",
-          "line": 85,
-          "endLine": 106
+          "line": 86,
+          "endLine": 107
         },
         {
           "n": 5,
           "level": 2,
           "text": "Міграції",
-          "line": 107,
-          "endLine": 113
+          "line": 108,
+          "endLine": 114
         },
         {
           "n": 6,
           "level": 2,
           "text": "Плановані сутності",
-          "line": 114,
-          "endLine": 117
+          "line": 115,
+          "endLine": 118
         }
       ]
     },
@@ -201,35 +201,35 @@
       "name": "Events & Export",
       "type": "architecture",
       "summary": "Подія transaction.created і Google Sheets subscriber; батч-флаш замість per-event запису.",
-      "rev": null,
+      "rev": "bd171cbdae89",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Подія",
-          "line": 12,
-          "endLine": 17
+          "line": 13,
+          "endLine": 18
         },
         {
           "n": 2,
           "level": 2,
           "text": "Google Sheets subscriber",
-          "line": 18,
-          "endLine": 27
+          "line": 19,
+          "endLine": 28
         },
         {
           "n": 3,
           "level": 2,
           "text": "Конфіг (env)",
-          "line": 28,
-          "endLine": 35
+          "line": 29,
+          "endLine": 36
         },
         {
           "n": 4,
           "level": 2,
           "text": "Майбутнє (за тією ж подією)",
-          "line": 36,
-          "endLine": 39
+          "line": 37,
+          "endLine": 40
         }
       ]
     },
@@ -239,63 +239,63 @@
       "name": "Invariants",
       "type": "architecture",
       "summary": "Сім непорушних правил проєкту — конституція. Порушення означає стоп і переробку.",
-      "rev": null,
+      "rev": "9b00294467a9",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "1. Гроші — ціле в мінорних одиницях, ніколи float",
-          "line": 10,
-          "endLine": 15
+          "line": 11,
+          "endLine": 16
         },
         {
           "n": 2,
           "level": 2,
           "text": "2. Дати — UTC у БД",
-          "line": 16,
-          "endLine": 19
+          "line": 17,
+          "endLine": 20
         },
         {
           "n": 3,
           "level": 2,
           "text": "3. Ядро не знає про джерело",
-          "line": 20,
-          "endLine": 23
+          "line": 21,
+          "endLine": 24
         },
         {
           "n": 4,
           "level": 2,
           "text": "4. Дедуп і мультитенантність",
-          "line": 24,
-          "endLine": 28
+          "line": 25,
+          "endLine": 29
         },
         {
           "n": 5,
           "level": 2,
           "text": "5. Метчинг — окремий шар post-processing",
-          "line": 29,
-          "endLine": 32
+          "line": 30,
+          "endLine": 33
         },
         {
           "n": 6,
           "level": 2,
           "text": "6. Сайд-ефекти — тільки через подію",
-          "line": 33,
-          "endLine": 37
+          "line": 34,
+          "endLine": 38
         },
         {
           "n": 7,
           "level": 2,
           "text": "7. Секрети — лише env/secrets",
-          "line": 38,
-          "endLine": 49
+          "line": 39,
+          "endLine": 50
         },
         {
           "n": 8,
           "level": 3,
           "text": "Похідні наслідки",
-          "line": 43,
-          "endLine": 49
+          "line": 44,
+          "endLine": 50
         }
       ]
     },
@@ -305,42 +305,42 @@
       "name": "Providers",
       "type": "architecture",
       "summary": "Контракт TransactionProvider: fetch плюс мапінг у NormalizedTransaction, нуль бізнес-логіки.",
-      "rev": null,
+      "rev": "e9bf8bcc3be6",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Контракт",
-          "line": 12,
-          "endLine": 23
+          "line": 13,
+          "endLine": 24
         },
         {
           "n": 2,
           "level": 2,
           "text": "NormalizedTransaction (канонічна форма)",
-          "line": 24,
-          "endLine": 28
+          "line": 25,
+          "endLine": 29
         },
         {
           "n": 3,
           "level": 2,
           "text": "Спільні хелпери (`src/core/normalize`)",
-          "line": 29,
-          "endLine": 33
+          "line": 30,
+          "endLine": 34
         },
         {
           "n": 4,
           "level": 2,
           "text": "Реалізації",
-          "line": 34,
-          "endLine": 39
+          "line": 35,
+          "endLine": 40
         },
         {
           "n": 5,
           "level": 2,
           "text": "Реєстрація",
-          "line": 40,
-          "endLine": 43
+          "line": 41,
+          "endLine": 44
         }
       ]
     },
@@ -350,42 +350,42 @@
       "name": "Sync Engine",
       "type": "architecture",
       "summary": "SyncService: віконна пагінація, дедуп по UNIQUE source-externalId, watermark-інкремент.",
-      "rev": null,
+      "rev": "e4e1c7a4f382",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Алгоритм (на кожен провайдер)",
-          "line": 12,
-          "endLine": 21
+          "line": 13,
+          "endLine": 22
         },
         {
           "n": 2,
           "level": 2,
           "text": "Ідемпотентність",
-          "line": 22,
-          "endLine": 25
+          "line": 23,
+          "endLine": 26
         },
         {
           "n": 3,
           "level": 2,
           "text": "Інкрементальність (watermark)",
-          "line": 26,
-          "endLine": 34
+          "line": 27,
+          "endLine": 35
         },
         {
           "n": 4,
           "level": 2,
           "text": "Entrypoint",
-          "line": 35,
-          "endLine": 38
+          "line": 36,
+          "endLine": 39
         },
         {
           "n": 5,
           "level": 2,
           "text": "Запуск локально",
-          "line": 39,
-          "endLine": 46
+          "line": 40,
+          "endLine": 47
         }
       ]
     },
@@ -395,56 +395,56 @@
       "name": "Card↔Crypto Matching",
       "type": "business",
       "summary": "Головна доменна цінність: гривнева собівартість крипти через звязок картковий дебет з P2P-припливом.",
-      "rev": null,
+      "rev": "5308f431b2bf",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Два сценарії",
-          "line": 16,
-          "endLine": 31
+          "line": 17,
+          "endLine": 32
         },
         {
           "n": 2,
           "level": 3,
           "text": "1. P2P-купівля (є метч card → crypto) — крок 5",
-          "line": 18,
-          "endLine": 25
+          "line": 19,
+          "endLine": 26
         },
         {
           "n": 3,
           "level": 3,
           "text": "2. Обмінник / депозит без картки (no match) — крок 6",
-          "line": 26,
-          "endLine": 31
+          "line": 27,
+          "endLine": 32
         },
         {
           "n": 4,
           "level": 2,
           "text": "Що зберігаємо — `CryptoPurchase`",
-          "line": 32,
-          "endLine": 44
+          "line": 33,
+          "endLine": 45
         },
         {
           "n": 5,
           "level": 2,
           "text": "Правила якості метчу",
-          "line": 45,
-          "endLine": 49
+          "line": 46,
+          "endLine": 50
         },
         {
           "n": 6,
           "level": 2,
           "text": "Звідки беруться дані для метчу",
-          "line": 50,
-          "endLine": 54
+          "line": 51,
+          "endLine": 55
         },
         {
           "n": 7,
           "level": 2,
           "text": "Статус",
-          "line": 55,
-          "endLine": 60
+          "line": 56,
+          "endLine": 61
         }
       ]
     },
@@ -602,7 +602,7 @@
           "level": 2,
           "text": "Процес / база знань",
           "line": 99,
-          "endLine": 104
+          "endLine": 112
         }
       ]
     },
@@ -913,49 +913,49 @@
       "name": "Plan 07 — Метчинг card↔crypto (крок 5)",
       "type": "plan",
       "summary": "Post-processing шар звязку карткового дебету з P2P-крипто-припливом; провайдери про нього не знають.",
-      "rev": null,
+      "rev": "5308f431b2bf",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Обсяг кроку 5 (тільки P2P BUY)",
-          "line": 11,
-          "endLine": 16
+          "line": 12,
+          "endLine": 17
         },
         {
           "n": 2,
           "level": 2,
           "text": "Правило метчу (P2P)",
-          "line": 17,
-          "endLine": 25
+          "line": 18,
+          "endLine": 26
         },
         {
           "n": 3,
           "level": 2,
           "text": "Сутність `CryptoPurchase` (нова)",
-          "line": 26,
-          "endLine": 34
+          "line": 27,
+          "endLine": 35
         },
         {
           "n": 4,
           "level": 2,
           "text": "Компоненти",
-          "line": 35,
-          "endLine": 45
+          "line": 36,
+          "endLine": 46
         },
         {
           "n": 5,
           "level": 2,
           "text": "Ідемпотентність",
-          "line": 46,
-          "endLine": 48
+          "line": 47,
+          "endLine": 49
         },
         {
           "n": 6,
           "level": 2,
           "text": "Критерії приймання",
-          "line": 49,
-          "endLine": 60
+          "line": 50,
+          "endLine": 61
         }
       ]
     },
@@ -1034,56 +1034,56 @@
       "name": "Crypto CSV",
       "type": "source",
       "summary": "Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.",
-      "rev": null,
+      "rev": "7a9c952b4991",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "Два провайдери (кожен = окремий parser + окремий `source`)",
-          "line": 11,
-          "endLine": 22
+          "line": 12,
+          "endLine": 23
         },
         {
           "n": 2,
           "level": 2,
           "text": "ФАКТИЧНИЙ ФОРМАТ КОЛОНОК (припущення — Binance не документує публічну CSV-схему)",
-          "line": 23,
-          "endLine": 45
+          "line": 24,
+          "endLine": 46
         },
         {
           "n": 3,
           "level": 2,
           "text": "Модель / мапінг",
-          "line": 46,
-          "endLine": 72
+          "line": 47,
+          "endLine": 73
         },
         {
           "n": 4,
           "level": 2,
           "text": "Реалізація",
-          "line": 73,
-          "endLine": 88
+          "line": 74,
+          "endLine": 89
         },
         {
           "n": 5,
           "level": 2,
           "text": "На майбутнє (не ламати зараз)",
-          "line": 89,
-          "endLine": 93
+          "line": 90,
+          "endLine": 94
         },
         {
           "n": 6,
           "level": 2,
           "text": "Відкриті питання",
-          "line": 94,
-          "endLine": 100
+          "line": 95,
+          "endLine": 101
         },
         {
           "n": 7,
           "level": 2,
           "text": "Кодування",
-          "line": 101,
-          "endLine": 104
+          "line": 102,
+          "endLine": 105
         }
       ]
     },
@@ -1093,49 +1093,49 @@
       "name": "Monobank",
       "type": "source",
       "summary": "Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.",
-      "rev": null,
+      "rev": "6b88e191cbd9",
       "headings": [
         {
           "n": 1,
           "level": 2,
           "text": "API",
-          "line": 10,
-          "endLine": 14
+          "line": 11,
+          "endLine": 15
         },
         {
           "n": 2,
           "level": 2,
           "text": "Ліміти (поважати обов'язково)",
-          "line": 15,
-          "endLine": 18
+          "line": 16,
+          "endLine": 19
         },
         {
           "n": 3,
           "level": 2,
           "text": "Як тягнемо (windowing)",
-          "line": 19,
-          "endLine": 28
+          "line": 20,
+          "endLine": 29
         },
         {
           "n": 4,
           "level": 2,
           "text": "Гроші й валюта (важливий підводний камінь)",
-          "line": 29,
-          "endLine": 38
+          "line": 30,
+          "endLine": 39
         },
         {
           "n": 5,
           "level": 2,
           "text": "Мапінг → NormalizedTransaction",
-          "line": 39,
-          "endLine": 47
+          "line": 40,
+          "endLine": 48
         },
         {
           "n": 6,
           "level": 2,
           "text": "Бекфіл / інкремент",
-          "line": 48,
-          "endLine": 51
+          "line": 49,
+          "endLine": 52
         }
       ]
     }

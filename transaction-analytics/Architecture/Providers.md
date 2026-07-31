@@ -3,6 +3,7 @@ summary: Контракт TransactionProvider: fetch плюс мапінг у No
 code:
   - src/providers/**
   - src/core/provider/**
+rev: e9bf8bcc3be6
 ---
 # Providers
 

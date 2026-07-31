@@ -2,6 +2,7 @@
 summary: Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.
 code:
   - src/providers/monobank/**
+rev: 6b88e191cbd9
 ---
 # Monobank
 

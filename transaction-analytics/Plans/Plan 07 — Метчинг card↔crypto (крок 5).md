@@ -2,6 +2,7 @@
 summary: Post-processing шар звязку карткового дебету з P2P-крипто-припливом; провайдери про нього не знають.
 code:
   - src/matching/**
+rev: 5308f431b2bf
 ---
 # Plan 07 — Метчинг card↔crypto (крок 5)
 

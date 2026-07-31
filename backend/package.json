@@ -28,11 +28,14 @@
     "db:down": "docker compose down",
     "sync": "ts-node src/sync.command.ts",
     "match": "ts-node src/match.command.ts",
+    "prepare": "node ../tools/vault/v.mjs init-hooks",
     "vault:build": "node ../tools/vault/v.mjs build",
     "vault:check": "node ../tools/vault/v.mjs check",
     "vault:find": "node ../tools/vault/v.mjs find",
     "vault:show": "node ../tools/vault/v.mjs show",
-    "vault:brief": "node ../tools/vault/v.mjs brief"
+    "vault:brief": "node ../tools/vault/v.mjs brief",
+    "vault:log": "node ../tools/vault/v.mjs log",
+    "vault:decide": "node ../tools/vault/v.mjs decide"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

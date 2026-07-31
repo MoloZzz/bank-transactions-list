@@ -37,6 +37,8 @@ csv	csv	файл	імпорт
 monobank	monobank	моно	монобанк
 binance	binance	бінанс
 rate	курс	rate	котирув
+nbu	нбу	національн	nbu
+date	дата	дати	utc
 currency	валют	валюта	currency
 deposit	депозит	поповнен	приплив
 withdraw	вивед	відтік	зняття

@@ -2,6 +2,7 @@
 summary: SyncService: віконна пагінація, дедуп по UNIQUE source-externalId, watermark-інкремент.
 code:
   - src/sync/**
+rev: e4e1c7a4f382
 ---
 # Sync Engine
 
