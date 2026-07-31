@@ -26,6 +26,7 @@ const USAGE = `vault — knowledge base tooling
   brief <ref>...                                       context.txt + named sections
   map                                                  dump map.tsv
   log [--misses] [-n N] [--clear]                      retrieval misses / truncations
+  ctx [<session>] [--all] [--list] [--json] [--strict] where this session's tokens went
   decide "<line>" --section <substring>                append a row to Decision Log
   init-hooks                                           arm core.hooksPath (never fails)
   hook session-start|subagent-start|post-read          Claude Code hook adapter
@@ -51,7 +52,8 @@ function parseArgs(argv) {
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '-n' || a === '--max-lines' || a === '--rule' || a === '--section') flags[a.replace(/^-+/, '')] = argv[++i];
+    if (a === '-n' || a === '--max-lines' || a === '--rule' || a === '--section' || a === '--session')
+      flags[a.replace(/^-+/, '')] = argv[++i];
     else if (a.startsWith('--')) flags[a.slice(2)] = true;
     else positional.push(a);
   }
@@ -128,6 +130,10 @@ async function main() {
     case 'log': {
       const { report } = await import('./lib/log.mjs');
       return report(root, flags);
+    }
+    case 'ctx': {
+      const { ctx } = await import('./lib/ctx.mjs');
+      return ctx(root, flags, positional);
     }
     case 'hook': {
       const { hook } = await import('./lib/hook.mjs');

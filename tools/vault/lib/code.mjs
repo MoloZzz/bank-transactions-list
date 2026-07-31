@@ -215,11 +215,33 @@ const KIND_TAG = {
   enum: 'enum',
 };
 
+/**
+ * What the map covers. `tools/vault` is in here because it was the single
+ * largest UNINDEXED surface in the repo: profiling a session showed ~15k tokens
+ * (53% of all Read cost) spent reading the tooling in full, purely because the
+ * indexer did not index itself. Adding a scope is cheaper than any amount of
+ * discipline about not grepping.
+ *
+ * `skip` is per-scope: specs are noise in `backend/src`, but `tools/vault` has
+ * no spec convention, so one shared regex would misdescribe both.
+ */
+const MAP_SCOPES = [
+  { label: 'src', dir: `${BACKEND_DIR}/src`, ext: '.ts', skip: /\.(int-)?spec\.ts$/ },
+  { label: 'tools/vault', dir: 'tools/vault', ext: '.mjs', skip: null },
+];
+
 export function codeMap(root) {
+  const out = [];
+  for (const scope of MAP_SCOPES) out.push(...scopeMap(root, scope));
+  return out;
+}
+
+/** One scope's rows, sorted. Scopes are concatenated in declaration order. */
+function scopeMap(root, scope) {
   // Both spec flavours: `.int-spec.ts` does NOT match /\.spec\.ts$/, and letting
   // them through adds a dozen symbol-less rows of pure noise.
-  const files = walk(root, `${BACKEND_DIR}/src`, { ext: '.ts' }).filter((f) => !/\.(int-)?spec\.ts$/.test(f));
-  const srcPrefix = `${BACKEND_DIR}/src/`;
+  const files = walk(root, scope.dir, { ext: scope.ext }).filter((f) => !scope.skip?.test(f));
+  const srcPrefix = `${scope.dir}/`;
   const out = [];
 
   for (const file of files) {
@@ -233,6 +255,7 @@ export function codeMap(root) {
     out.push({
       file,
       rel,
+      scope: scope.label,
       dir: dirname === '.' ? '' : dirname,
       base: path.posix.basename(rel),
       symbols,
