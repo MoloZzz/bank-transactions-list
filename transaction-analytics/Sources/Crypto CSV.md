@@ -1,3 +1,8 @@
+---
+summary: Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.
+code:
+  - src/providers/binance/**
+---
 # Crypto CSV
 
 Джерело крипти з Binance CSV (`backend/src/providers/binance/`). Статус — [[Roadmap & Status]].
@@ -17,7 +22,7 @@ env-шляхи, `BINANCE_P2P_CSV_PATH` / `BINANCE_DEPOSIT_CSV_PATH`), не ав�
 
 ## ФАКТИЧНИЙ ФОРМАТ КОЛОНОК (припущення — Binance не документує публічну CSV-схему)
 Офіційної специфікації колонок цих двох CSV не знайдено (P2P/Deposit export UI сам генерує
-файл; публічної схеми немає). Реалізовано під **реалістичний, але не 1:1-підтверджений**
+файл; публічної схеми немає). Парсер розрахований на **реалістичний, але не 1:1-підтверджений**
 формат; якщо реальний експорт користувача відрізняється — потрібно підправити лише
 відповідний `binance-*.provider.ts` (мапінг колонок), контракт/ядро не зачіпається.
 
@@ -41,7 +46,7 @@ Date(UTC),Coin,Amount,Network,Address,TXID,Status
 ## Модель / мапінг
 - Типи `buy/sell/deposit` (з `TransactionType`) лягають у ту саму
   [[Data Model|NormalizedTransaction]] (окрема таблиця не потрібна). `fee`/`withdraw`
-  поки не реалізовані — не було джерела даних під них у цьому кроці.
+  поза скоупом — немає джерела даних під них.
 - **P2P → одна нога = крипто-частина ордера.** `BUY` → додатний inflow крипти, `SELL` →
   від'ємний outflow. Fiat-сторона (сума + курс) не отримує власного рядка — вона живе в
   `metadata` (`fiatAmountMinor` як **рядок** мінорних одиниць — не BigInt/float,
@@ -78,8 +83,8 @@ Date(UTC),Coin,Amount,Network,Address,TXID,Status
   (`TRANSACTION_PROVIDERS`), решта ядра не змінена.
 - Тести: `*.spec.ts` на кожен хелпер і провайдер (дати/scale/хеш/tradeRef/обидва формати) +
   `binance-csv.int-spec.ts` (import обох CSV → `SyncService` → Postgres, ідемпотентність).
-  **Інтеграційний тест не прогнаний** у середовищі розробки цього кроку (немає Docker у
-  sandbox) — прогнати `npm run test:int` окремо. → [[Roadmap & Status]]
+  Статус прогону й лічильники — лише в [[Roadmap & Status]] (єдине джерело правди);
+  актуальні числа генеруються в `_gen/context.txt`.
 
 ## На майбутнє (не ламати зараз)
 Інвестиційний PnL потребуватиме lot-tracking (FIFO) і пар base/quote. Схему під це зараз

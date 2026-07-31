@@ -1,3 +1,8 @@
+---
+summary: SyncService: віконна пагінація, дедуп по UNIQUE source-externalId, watermark-інкремент.
+code:
+  - src/sync/**
+---
 # Sync Engine
 
 `SyncService` (`src/sync/sync.service.ts`). Оркеструє один прогін: для кожного провайдера

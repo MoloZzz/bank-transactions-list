@@ -1,3 +1,6 @@
+---
+summary: Шари й потік даних: source-agnostic ядро, провайдери збоку, сайд-ефекти через подію.
+---
 # Architecture Overview
 
 Шарувата, source-agnostic. Ядро (normalize/sync) нічого не знає про конкретні джерела —
@@ -15,12 +18,13 @@ flowchart TD
     end
 
     MB --> MP[MonobankProvider]
-    P2P --> CP[CryptoCsvProvider — planned]
-    DEP --> CP
-    BANK --> BP[BankCsvProvider — later]
+    P2P --> PP[BinanceP2pProvider]
+    DEP --> DP[BinanceDepositProvider]
+    BANK --> BP[BankCsvProvider — крок 7]
 
     MP --> N[NormalizedTransaction]
-    CP --> N
+    PP --> N
+    DP --> N
     BP --> N
 
     N --> SYNC[SyncService]
@@ -30,8 +34,8 @@ flowchart TD
     EV --> SHEET[Sheets subscriber - batched flush]
     SHEET --> GS[Google Sheet]
 
-    TX -.->|post-processing later| MATCH[Matching card↔crypto]
-    MATCH --> CPUR[(CryptoPurchase — planned)]
+    TX -.->|post-processing, npm run match| MATCH[MatchingService card↔crypto]
+    MATCH --> CPUR[(crypto_purchases)]
 ```
 
 ## Шари

@@ -1,3 +1,9 @@
+---
+summary: Контракт TransactionProvider: fetch плюс мапінг у NormalizedTransaction, нуль бізнес-логіки.
+code:
+  - src/providers/**
+  - src/core/provider/**
+---
 # Providers
 
 Єдиний контракт, який знає ядро. Нове джерело = нова реалізація, ядро не чіпається

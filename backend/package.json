@@ -27,7 +27,12 @@
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "sync": "ts-node src/sync.command.ts",
-    "match": "ts-node src/match.command.ts"
+    "match": "ts-node src/match.command.ts",
+    "vault:build": "node ../tools/vault/v.mjs build",
+    "vault:check": "node ../tools/vault/v.mjs check",
+    "vault:find": "node ../tools/vault/v.mjs find",
+    "vault:show": "node ../tools/vault/v.mjs show",
+    "vault:brief": "node ../tools/vault/v.mjs brief"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

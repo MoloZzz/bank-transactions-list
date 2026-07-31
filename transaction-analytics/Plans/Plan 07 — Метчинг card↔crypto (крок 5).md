@@ -1,6 +1,11 @@
+---
+summary: Post-processing шар звязку карткового дебету з P2P-крипто-припливом; провайдери про нього не знають.
+code:
+  - src/matching/**
+---
 # Plan 07 — Метчинг card↔crypto (крок 5)
 
-Окремий шар post-processing: звʼязати гривневий картковий дебет із P2P-крипто-припливом.
+Окремий шар post-processing ([[Invariants]] #5): звʼязати гривневий картковий дебет із P2P-крипто-припливом.
 Провайдери про метчинг не знають ([[Invariants]] #5). → [[Card↔Crypto Matching]]
 
 ## Обсяг кроку 5 (тільки P2P BUY)
@@ -14,13 +19,15 @@
 `bookedAt ∈ [cryptoTime − window, cryptoTime]` (дебет **до** отримання крипти),
 `|abs(cardAmount) − fiatAmount| ≤ tolerance`, і **ще не використаний** іншою покупкою.
 Найкращий = мін |Δсума|, далі мін |Δчас|. 1-до-1. Курс — з CSV, нічого не рахуємо.
-- `window` = `MATCH_WINDOW_SEC` (деф. 7200 = 2 год), `tolerance` = `MATCH_TOLERANCE_MINOR`
+- `window` = `MATCH_WINDOW_SEC`, `tolerance` = `MATCH_TOLERANCE_MINOR` — значення й канон
+  у [[Card↔Crypto Matching]]
   (деф. 0 = точний збіг). Обидва з env.
 
 ## Сутність `CryptoPurchase` (нова)
 `id` uuid PK; `cryptoTxId` uuid FK→transactions ON DELETE CASCADE **UNIQUE** (1 покупка на
 ногу); `cardTxId` uuid? FK→transactions ON DELETE SET NULL; `asset`; `cryptoAmount`
 numeric(38,0)↔BigInt + `cryptoDecimals`; `fiatCurrency`; `fiatAmount` numeric(38,0)↔BigInt +
+  (повний перелік полів — канон [[Data Model]])
 `fiatDecimals`; `rate` varchar (string, float-free); `rateSource` ('CSV'|'NBU');
 `matchType` ('p2p'|'estimate'); `confidence` real?; `manualOverride` bool=false;
 `createdAt`/`updatedAt`. Гроші — [[Invariants]] #1. → [[Data Model]]
@@ -40,13 +47,13 @@ numeric(38,0)↔BigInt + `cryptoDecimals`; `fiatCurrency`; `fiatAmount` numeric(
 Апсерт по `cryptoTxId`; повторний прогін не дублює й не клобить `manualOverride`.
 
 ## Критерії приймання
-- [ ] `chooseCardMatch` unit: точний збіг; поза вікном; розбіжність суми > tolerance;
+- [x] `chooseCardMatch` unit: точний збіг; поза вікном; розбіжність суми > tolerance;
   вибір найближчого; нема кандидата; вже-використаний дебет виключено.
-- [ ] Інтеграційний: monobank UAH-дебет + P2P BUY (fiat=дебет, час у вікні) → один
+- [x] Інтеграційний: monobank UAH-дебет + P2P BUY (fiat=дебет, час у вікні) → один
   `CryptoPurchase` з `cardTxId`, `rateSource='CSV'`, `matchType='p2p'`, `confidence` високий.
-- [ ] Інтеграційний: P2P BUY без відповідного дебету → `CryptoPurchase` з `cardTxId=null`.
-- [ ] Інтеграційний: повторний `run()` ідемпотентний; `manualOverride=true` не перезаписано.
-- [ ] `tsc` чистий, `npm test` зелений, `npm run test:int` зелений.
-- [ ] Vault оновлено (DoD): [[Data Model]] (нова сутність), [[Decision Log]] (рішення),
+- [x] Інтеграційний: P2P BUY без відповідного дебету → `CryptoPurchase` з `cardTxId=null`.
+- [x] Інтеграційний: повторний `run()` ідемпотентний; `manualOverride=true` не перезаписано.
+- [x] `tsc` чистий, `npm test` зелений, `npm run test:int` зелений.
+- [x] Vault оновлено (DoD): [[Data Model]] (нова сутність), [[Decision Log]] (рішення),
   [[Roadmap & Status]] (статус/тести).
-- [ ] Жоден [[Invariants|інваріант]] не порушено (метчинг — окремий шар; провайдери не чіпані).
+- [x] Жоден [[Invariants|інваріант]] не порушено (метчинг — окремий шар; провайдери не чіпані).

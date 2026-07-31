@@ -1,3 +1,9 @@
+---
+summary: Подія transaction.created і Google Sheets subscriber; батч-флаш замість per-event запису.
+code:
+  - src/events/**
+  - src/subscribers/**
+---
 # Events & Export
 
 Сайд-ефекти — лише через подію `transaction.created` (→ [[Invariants]] #6). Синк не знає
@@ -7,7 +13,7 @@
 - Константа `TRANSACTION_CREATED = 'transaction.created'`, інтерфейс `EventBus` (у Nest
   його закриває `EventEmitter2`).
 - `SyncService` емітить подію **лише на реально створені** рядки (не на дедуп-хіти).
-- Поки що **один** subscriber — не плодимо подієвість заздалегідь.
+- Поки що **один** subscriber — не плодимо подієвість заздалегідь (канон: [[Invariants]] #6).
 
 ## Google Sheets subscriber
 - Слухає `transaction.created`, **буферизує** рядки і робить **один батч-append** на

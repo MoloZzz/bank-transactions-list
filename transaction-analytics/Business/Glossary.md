@@ -1,3 +1,6 @@
+---
+summary: Терміни: Transaction, Account, CryptoPurchase, provider, normalize, мінорні одиниці, scale.
+---
 # Glossary
 
 - **Transaction** — нормалізований запис руху грошей (фіат або крипта), source-agnostic.
@@ -23,6 +26,7 @@
 - **P2P** — peer-to-peer купівля крипти за фіат (Binance P2P). → [[Card↔Crypto Matching]]
 - **operationAmount / operationCurrency** — сума/валюта операції (Monobank), на відміну
   від суми у валюті рахунку; для крос-валютних платежів. → [[Monobank]]
-- **CryptoPurchase** — майбутня сутність результату метчингу card↔crypto.
-  → [[Card↔Crypto Matching]]
+- **CryptoPurchase** — сутність результату метчингу card↔crypto: одна крипто-нога плюс
+  фіатна собівартість і, якщо метч знайдено, картковий дебет. → [[Card↔Crypto Matching]],
+  [[Data Model]]
 - **rateSource** — джерело курсу для оцінки fiat: `CSV` (з P2P) або `NBU` (estimate).

@@ -1,3 +1,6 @@
+---
+summary: Хаб бази знань: навігація по нотах — бізнес, архітектура, джерела, рішення, плани.
+---
 # Financial Transactions Aggregator — Knowledge Base
 
 Персональний фінансовий трекер: збирає транзакції по картках і крипто-поповнення,
@@ -25,6 +28,9 @@
 - [[Monobank]] — API, ліміти, підводні камені
 - [[Crypto CSV]] — Binance P2P + deposit
 - [[Bank CSV]] — Privat тощо
+
+## Планування
+- [[Analytics & Control — Backlog]] — беклог аналітики й контролю, плани `Plans/`
 
 ## Процес і рішення
 - [[Roadmap & Status]] — порядок і що вже готово

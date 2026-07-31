@@ -1,3 +1,9 @@
+---
+summary: Сутності, поля, типи, індекси, ERD і міграції. Гроші — numeric(38,0) на BigInt.
+code:
+  - src/modules/**
+  - src/database/migrations/**
+---
 # Data Model
 
 Схема через TypeORM-міграції (`synchronize:false`). Гроші — `numeric(38,0)` ↔ `BigInt`
@@ -60,7 +66,7 @@ erDiagram
 
 ## `transactions`
 - **PK** `id` uuid (`gen_random_uuid()`).
-- **`UNIQUE(source, externalId)`** — ключ дедупу/ідемпотентності (#4).
+- **`UNIQUE(source, externalId)`** — ключ дедупу/ідемпотентності ([[Invariants]] #4).
 - `amount numeric(38,0)` + `currencyCode` + `decimals` — самодостатня сума.
   `numeric(38,0)` обрано, щоб крипта з великою точністю не переповнювала `bigint`.
 - `type` — плоский enum (`TransactionType`); P2P-ознаки йдуть у `metadata`, окремого

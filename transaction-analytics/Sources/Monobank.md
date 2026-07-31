@@ -1,3 +1,8 @@
+---
+summary: Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.
+code:
+  - src/providers/monobank/**
+---
 # Monobank
 
 Personal API, джерело `monobank` (`src/providers/monobank/*`). Статус — [[Roadmap & Status]].
