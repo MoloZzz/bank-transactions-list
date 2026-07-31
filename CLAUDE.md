@@ -67,7 +67,7 @@ check      validate; writes NOTHING (this is the git hook)
 pin <note>                       re-pin rev: after the code it describes changed
 decide "<line>" --section <sub>  append a row to Decision Log
 log [--misses]                   retrieval misses, truncations, L4 reads
-ctx [--all] [--strict]           where this session's tokens went; exit 1 over budget
+ctx [--all] [--history] [--strict]  where this session's tokens went; exit 1 over budget
 ```
 From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide|ctx`.
 
@@ -92,6 +92,14 @@ never the expensive part — the work is, and 22% was harness injections nobody 
    rewritten file leaves its entire superseded body in context for the rest of the session.
 5. **Close and delete finished tasks.** Every reminder re-injects the *whole* list (23k tok over
    31 injections in one session). Durable status belongs in [[Roadmap & Status]], not a task list.
+
+**Rules 2 and 4 are now enforced, not advised.** Hooks in `.claude/settings.json` measure the live
+peak every turn and warn **once** per threshold crossed (60% / 100% / 150%), never repeating — a
+notice that re-fires every turn would be defect 5 above. Past 100% a `PreToolUse` gate refuses
+`Write` on a file that already exists, and full `Read`s of notes you have not `show`n first; each
+refusal names its own escape, and `VAULT_CTX_OFF=1` lifts all of them. Subagents are handed the
+≤30-line report contract at start. No hook can compact or clear the window: the governor measures,
+warns and refuses — that is the whole of it. `vault ctx --history` shows the trend across sessions.
 
 ## Definition of Done (every task)
 Canon: [[Roadmap & Status]] § «Definition of Done», plus `vault check` clean. Not duplicated

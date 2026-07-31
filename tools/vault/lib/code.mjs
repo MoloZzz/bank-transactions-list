@@ -266,7 +266,7 @@ function scopeMap(root, scope) {
   // interleaves root files with subdirectories ("main.ts" falls between
   // "config/" and "matching/"), which splits a single directory into several
   // headings in the rendered map.
-  return sortBy(out, (x) => `${x.dir} ${x.base}`);
+  return sortBy(out, (x) => `${x.dir}\0${x.base}`);
 }
 
 /** `backend/package.json`'s `scripts` map, as-is. */

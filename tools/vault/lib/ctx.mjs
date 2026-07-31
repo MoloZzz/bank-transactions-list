@@ -21,8 +21,10 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-/** Anything above this and the agent is working in a degraded window. */
-const BUDGET = 50_000;
+// BUDGET lives in guard.mjs — it is the governor's threshold, and this module
+// only reports against it. The dependency runs reporter -> governor and never
+// back, which is what keeps this profiler out of the per-tool-call hot path.
+import { BUDGET } from './guard.mjs';
 /** A single tool result over this is worth naming individually. */
 const FAT_RESULT = 4_000;
 /** A subagent whose report costs this much has defeated its own purpose. */
@@ -207,7 +209,7 @@ function estTokensOfResult(c) {
  * The actionable half. Every finding names a specific, changeable behaviour —
  * a generic "you used a lot of context" produces no edit.
  */
-function findings(p) {
+export function findings(p) {
   const out = [];
 
   if (p.peak > BUDGET) {
@@ -330,6 +332,17 @@ function renderOne(p, flags) {
 }
 
 export function ctx(root, flags = {}, positional = []) {
+  // Every hook event receives `transcript_path` on stdin, so a caller that has
+  // one can name the exact file rather than guessing the newest by mtime — and
+  // this path never touches the projects directory, which may not exist.
+  if (flags.transcript) {
+    if (!existsSync(flags.transcript)) {
+      process.stderr.write(`vault ctx: no transcript at ${flags.transcript}\n`);
+      return 2;
+    }
+    return emitOne(profile(flags.transcript), path.basename(flags.transcript, '.jsonl'), flags);
+  }
+
   const all = sessions(root);
   if (!all.length) {
     process.stdout.write(
@@ -372,12 +385,16 @@ export function ctx(root, flags = {}, positional = []) {
     return 2;
   }
 
-  const p = profile(target.abs);
+  return emitOne(profile(target.abs), target.id, flags);
+}
+
+/** One session's report in either format. Shared by the CLI and --transcript. */
+function emitOne(p, id, flags) {
   if (flags.json) {
     process.stdout.write(
       JSON.stringify(
         {
-          session: target.id,
+          session: id,
           peak: p.peak,
           budget: BUDGET,
           turns: p.turns,

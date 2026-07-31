@@ -7,3 +7,9 @@ tools/*.tar.gz
 # under transaction-analytics/_gen/, which `vault check` compares for freshness:
 # a file that mutates on every read would make the hook flap.
 tools/vault/.log.tsv
+
+# Context governor: live per-session measurement, and the cross-session trend.
+# Same placement argument as the log above — mutates every turn, so it must stay
+# out of _gen/, and it describes this machine's sessions, not the repo.
+tools/vault/.ctx.json
+tools/vault/.ctx.tsv

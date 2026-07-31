@@ -14,6 +14,7 @@
  * Keeping 1 and 2 distinct means a crashed parser never reads as "vault is bad".
  */
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 
 const USAGE = `vault — knowledge base tooling
@@ -26,7 +27,8 @@ const USAGE = `vault — knowledge base tooling
   brief <ref>...                                       context.txt + named sections
   map                                                  dump map.tsv
   log [--misses] [-n N] [--clear]                      retrieval misses / truncations
-  ctx [<session>] [--all] [--list] [--json] [--strict] where this session's tokens went
+  ctx [<session>] [--all] [--list] [--history] [--json]  where this session's tokens went
+      [--strict] [--transcript <path>]
   decide "<line>" --section <substring>                append a row to Decision Log
   init-hooks                                           arm core.hooksPath (never fails)
   hook session-start|subagent-start|post-read          Claude Code hook adapter
@@ -40,6 +42,17 @@ Refs accept: "Data Model#crypto_purchases" | "Data Model#5" | "matching#2"
  * from varying cwds depending on the client).
  */
 function repoRoot() {
+  // Hooks now run in front of every Read and Write, and `git rev-parse` is a
+  // subprocess: measured, it was ~60ms of a ~140ms hook. Claude Code already
+  // exports the project directory, so take that hint when it is demonstrably a
+  // repo root AND contains the cwd — the containment check is what makes this
+  // safe to apply to every command rather than only to hooks.
+  const hinted = process.env.CLAUDE_PROJECT_DIR;
+  if (hinted) {
+    const abs = path.resolve(hinted);
+    const rel = path.relative(abs, process.cwd());
+    if (!rel.startsWith('..') && !path.isAbsolute(rel) && existsSync(path.join(abs, '.git'))) return abs;
+  }
   const out = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     encoding: 'buffer',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -52,7 +65,14 @@ function parseArgs(argv) {
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '-n' || a === '--max-lines' || a === '--rule' || a === '--section' || a === '--session')
+    if (
+      a === '-n' ||
+      a === '--max-lines' ||
+      a === '--rule' ||
+      a === '--section' ||
+      a === '--session' ||
+      a === '--transcript'
+    )
       flags[a.replace(/^-+/, '')] = argv[++i];
     else if (a.startsWith('--')) flags[a.slice(2)] = true;
     else positional.push(a);
@@ -132,6 +152,12 @@ async function main() {
       return report(root, flags);
     }
     case 'ctx': {
+      // --history reads the rows the SessionEnd hook wrote, so it lives with
+      // the writer in guard.mjs; everything else profiles a transcript.
+      if (flags.history) {
+        const { historyReport } = await import('./lib/guard.mjs');
+        return historyReport(root, flags);
+      }
       const { ctx } = await import('./lib/ctx.mjs');
       return ctx(root, flags, positional);
     }
