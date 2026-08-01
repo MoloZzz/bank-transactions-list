@@ -63,6 +63,11 @@ Full text: [[Invariants]]. This block is generated, so it cannot diverge from th
 Test counts live in `_gen/context.txt`, not in the notes.
 
 ## Vault tooling (`node tools/vault/v.mjs <cmd>`)
+`vault.config.json` at the repo root binds the (project-agnostic) tooling to this project:
+`vaultDir`, `codeRoot`, the `adapter` supplying stack facts, and the `## STACK` text of the L1
+pack. It is found by walking up from the cwd. Stack knowledge lives in
+`tools/vault/adapters/` — `nest-typeorm` here, `none` for a stack with no adapter yet, which
+omits the CODE/ENV/CMDS sections rather than failing.
 ```
 build      regenerate _gen/* and auto-blocks (WRITES)
 check      validate; writes NOTHING (this is the git hook)

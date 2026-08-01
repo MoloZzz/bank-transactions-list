@@ -22,6 +22,7 @@
  */
 import { createRequire } from 'node:module';
 import * as path from 'node:path';
+import { CONFIG } from './config.mjs';
 import { readTextOrNull, writeText, toPosix, shortDigest, VAULT_DIR, BACKEND_DIR } from './fs.mjs';
 
 /**
@@ -113,9 +114,9 @@ function registryDigest(metrics) {
 }
 
 /**
- * DATABASE_URL from the environment, else from backend/.env — the same single
- * URL the app itself uses, so `evidence` can never measure a different database
- * than `npm run sync` writes to.
+ * DATABASE_URL from the environment, else from the code root's `.env` — the
+ * same single URL the app itself uses, so `evidence` can never measure a
+ * different database than `npm run sync` writes to.
  */
 function databaseUrl(root) {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
@@ -129,7 +130,7 @@ function databaseUrl(root) {
   return null;
 }
 
-/** Resolve `pg` out of backend/node_modules — the vault tooling stays dependency-free. */
+/** Resolve `pg` out of the project's node_modules — the vault tooling stays dependency-free. */
 function loadPg(root) {
   const require = createRequire(path.resolve(root, BACKEND_DIR, 'package.json'));
   try {
@@ -150,7 +151,13 @@ function pad(s, w) {
 
 /** Turn a Postgres error code into the action that actually fixes it. */
 function hintFor(err) {
-  if (err.code === '42P01') return ' — schema missing; run: cd backend && npm run migration:run';
+  // The command that creates the schema is project-specific; without it in the
+  // config the best we can do is name the cause, which still beats a raw code.
+  if (err.code === '42P01') {
+    return CONFIG.migrateCmd
+      ? ` — schema missing; run: ${CONFIG.migrateCmd}`
+      : ' — schema missing; this table does not exist in the measured database';
+  }
   if (err.code === '42703') return ' — column renamed? re-check this metric against the migrations';
   if (err.code === '57014') return ' — statement timed out; the metric needs an index or a cheaper shape';
   return '';

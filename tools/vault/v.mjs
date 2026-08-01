@@ -118,6 +118,11 @@ async function main() {
 
   switch (cmd) {
     case 'build': {
+      // The only command that writes the generated tree. Everything else
+      // degrades quietly on a missing config; generating a vault into a guessed
+      // directory would not be a degradation, it would be wrong output.
+      const { requireConfig } = await import('./lib/config.mjs');
+      requireConfig();
       const { build } = await import('./lib/render.mjs');
       return build(root, flags);
     }
