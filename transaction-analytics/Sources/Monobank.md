@@ -1,51 +1,51 @@
 ---
-summary: Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.
+summary: Monobank Personal API: limits, windowed pagination, and a cross-currency pitfall.
 code:
   - src/providers/monobank/**
 rev: 6b88e191cbd9
 ---
 # Monobank
 
-Personal API, джерело `monobank` (`src/providers/monobank/*`). Статус — [[Roadmap & Status]].
+Personal API, `monobank` source (`src/providers/monobank/*`). Status — [[Roadmap & Status]].
 
 ## API
-- База `https://api.monobank.ua`, заголовок `X-Token: <token>` (з `.env`, → [[Invariants]] #7).
-- `GET /personal/client-info` → рахунки (`id`, `currencyCode` ISO-numeric, `maskedPan[]`, `type`).
-- `GET /personal/statement/{account}/{from}/{to}` → масив операцій; час у unix-секундах.
+- Base `https://api.monobank.ua`, header `X-Token: <token>` (from `.env`, → [[Invariants]] #7).
+- `GET /personal/client-info` → accounts (`id`, `currencyCode` ISO-numeric, `maskedPan[]`, `type`).
+- `GET /personal/statement/{account}/{from}/{to}` → array of operations; time in Unix seconds.
 
-## Ліміти (поважати обов'язково)
-- **1 запит / 60 секунд** на `/statement` (інакше 429 → backoff).
-- Вікно виписки **≤ 31 доба + 1 година = 2682000 с**; перевищення → **400**.
+## Limits (must be respected)
+- **1 request / 60 seconds** to `/statement` (otherwise 429 → backoff).
+- Statement window **≤ 31 days + 1 hour = 2682000 s**; exceeding it → **400**.
 
-## Як тягнемо (windowing)
-- Ділимо `[since, now]` на вікна по 31 день (з overlap на граничну секунду — без дір;
-  дублі знімає дедуп).
-- Ідемо **newest-first** (від тепер у минуле) і **зупиняємось на `400`** — Monobank
-  відповідає 400 (не порожнім списком) на діапазони **до існування рахунку**, тож 400 =
-  межа доступної історії. Так «вся історія» збирається без падіння й без знання дати
-  відкриття рахунку.
-- Між запитами `wait(60с)`; на 429 — експоненційний backoff. `wait`/`now` інжектуються
-  (тести миттєві, без мережі).
+## How we fetch (windowing)
+- Split `[since, now]` into 31-day windows (with a one-second boundary overlap — no gaps;
+  duplicates are removed by deduplication).
+- Go **newest-first** (from now into the past) and **stop at `400`** — Monobank
+  returns 400 (not an empty list) for ranges **before the account existed**, so 400 =
+  the boundary of available history. This collects «all history» without failing and without
+  knowing the account opening date.
+- Between requests, `wait(60s)`; on 429, exponential backoff. `wait`/`now` are injected
+  (tests are instant and network-free).
 
-## Гроші й валюта (важливий підводний камінь)
-- `item.amount` — **у валюті РАХУНКУ**, у копійках (ціле). Кладемо прямо в `BigInt`.
-- `item.currencyCode` — це валюта **ОПЕРАЦІЇ**, НЕ рахунку. Тому суму маркуємо валютою
-  рахунку (`account.currencyCode` із client-info), інакше крос-валютні операції
-  отримують хибний ярлик (напр. −780 UAH переказ показувався як «USD»).
-- `operationAmount` + `operationCurrencyCode` (валюта операції) → у `metadata` (знадобиться
-  для [[Card↔Crypto Matching]]).
-- Приклад: переказ −780.00 UAH з гривневої картки → +17.32 USD; `amount=-78000` (UAH),
-  `operationAmount=-1732` (USD), співвідношення ≈ курс 45 UAH/USD.
+## Money and currency (important pitfall)
+- `item.amount` — **in the account currency**, in kopecks (integer). Put it directly into `BigInt`.
+- `item.currencyCode` is the **OPERATION** currency, NOT the account currency. Therefore, label
+  the amount with the account currency (`account.currencyCode` from client-info); otherwise
+  cross-currency operations get the wrong label (e.g. a −780 UAH transfer appeared as «USD»).
+- `operationAmount` + `operationCurrencyCode` (operation currency) → into `metadata` (needed
+  for [[Card↔Crypto Matching]]).
+- Example: −780.00 UAH transfer from a hryvnia card → +17.32 USD; `amount=-78000` (UAH),
+  `operationAmount=-1732` (USD), ratio ≈ rate of 45 UAH/USD.
 
-## Мапінг → NormalizedTransaction
-- `externalId` = `item.id` (стабільний, без хешу).
-- `type` = `transfer` (плоский enum).
+## Mapping → NormalizedTransaction
+- `externalId` = `item.id` (stable, without a hash).
+- `type` = `transfer` (flat enum).
 - `bookedAt` = `new Date(item.time * 1000)` (UTC).
 - `account` = `{ externalId: account.id, maskedPan: maskedPan[0], type, currencyCode }`.
 - `metadata`: `mcc`, `originalMcc`, `description`, `comment`, `hold`, `balance`,
   `commissionRate`, `cashbackAmount`, `operationAmount`, `operationCurrencyCode`,
-  контрагент (`counterName/Iban/Edrpou`), `receiptId`, `accountId`.
+  counterparty (`counterName/Iban/Edrpou`), `receiptId`, `accountId`.
 
-## Бекфіл / інкремент
-- Перший прогін = вся історія (довго: 1 вікно/60с). Далі — інкрементально від watermark.
-  → [[Sync Engine]]. Обмежити глибину: `MONO_SINCE=YYYY-MM-DD` у `.env`.
+## Backfill / incremental sync
+- First run = all history (slow: 1 window/60s). After that, incrementally from the watermark.
+  → [[Sync Engine]]. Limit the depth with `MONO_SINCE=YYYY-MM-DD` in `.env`.

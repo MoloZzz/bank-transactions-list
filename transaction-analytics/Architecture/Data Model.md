@@ -1,5 +1,5 @@
 ---
-summary: Сутності, поля, типи, індекси, ERD і міграції. Гроші — numeric(38,0) на BigInt.
+summary: Entities, fields, types, indexes, ERD and migrations. Money — numeric(38,0) to BigInt.
 code:
   - src/modules/**
   - src/database/migrations/**
@@ -7,8 +7,8 @@ rev: a292e63eff06
 ---
 # Data Model
 
-Схема через TypeORM-міграції (`synchronize:false`). Гроші — `numeric(38,0)` ↔ `BigInt`
-(див. [[Invariants]] #1).
+Schema through TypeORM migrations (`synchronize:false`). Money — `numeric(38,0)` ↔ `BigInt`
+(see [[Invariants]] #1).
 
 ## ERD
 
@@ -67,51 +67,51 @@ erDiagram
 
 ## `transactions`
 - **PK** `id` uuid (`gen_random_uuid()`).
-- **`UNIQUE(source, externalId)`** — ключ дедупу/ідемпотентності ([[Invariants]] #4).
-- `amount numeric(38,0)` + `currencyCode` + `decimals` — самодостатня сума.
-  `numeric(38,0)` обрано, щоб крипта з великою точністю не переповнювала `bigint`.
-- `type` — плоский enum (`TransactionType`); P2P-ознаки йдуть у `metadata`, окремого
-  типу не заводимо (простота). → [[Decision Log]]
-- `bookedAt timestamptz` (UTC). Індекси: `(bookedAt)`, `(accountId, bookedAt)`.
+- **`UNIQUE(source, externalId)`** — dedupe/idempotency key ([[Invariants]] #4).
+- `amount numeric(38,0)` + `currencyCode` + `decimals` — self-contained amount.
+  `numeric(38,0)` was chosen so crypto with high precision would not overflow `bigint`.
+- `type` — flat enum (`TransactionType`); P2P markers live in `metadata`, no separate
+  type is introduced (simplicity). → [[Decision Log]]
+- `bookedAt timestamptz` (UTC). Indexes: `(bookedAt)`, `(accountId, bookedAt)`.
 - `accountId` — FK → `accounts.id`, `ON DELETE SET NULL`, nullable.
-- `metadata jsonb` — точка розширення: Monobank `mcc`, `operationAmount`,
-  `operationCurrencyCode`, контрагент; майбутній крипто `tradeRef`/`groupId` для зв'язку
-  ніг трейду (щоб не унеможливити FIFO PnL). → [[Card↔Crypto Matching]]
+- `metadata jsonb` — extension point: Monobank `mcc`, `operationAmount`,
+  `operationCurrencyCode`, counterparty; future crypto `tradeRef`/`groupId` for linking
+  trade legs (so FIFO PnL stays possible). → [[Card↔Crypto Matching]]
 
 ## `accounts`
 - **PK** `id` uuid; **`UNIQUE(source, externalId)`**.
-- Дисплей-поля: `name`, `maskedPan`, `currencyCode`, `type` — «картка ••1234 / UAH».
-- Апсертиться синком (збагачується з кожним прогоном). → [[Sync Engine]]
+- Display fields: `name`, `maskedPan`, `currencyCode`, `type` — "card ••1234 / UAH".
+- Upserted from sync (enriched on every run). → [[Sync Engine]]
 
-## `crypto_purchases` (крок 5)
-- **PK** `id` uuid. Результат post-processing шару метчингу card↔crypto — записується
-  лише `MatchingService` (`npm run match`), провайдери й `SyncService` про цю таблицю не
-  знають. → [[Invariants]] #5, [[Card↔Crypto Matching]]
-- **`cryptoTxId`** — FK → `transactions.id`, `ON DELETE CASCADE`, **`UNIQUE`**: максимум
-  один `CryptoPurchase` на крипто-приплив (одна нога = один запис).
-- **`cardTxId`** — FK → `transactions.id`, `ON DELETE SET NULL`, nullable: картковий
-  дебет, що профінансував покупку, якщо метч знайдено; `null` = unmatched. Індекс на
-  `cardTxId`.
-- `asset` + `cryptoAmount numeric(38,0)`↔`BigInt` + `cryptoDecimals` — крипто-сторона
-  (з тієї ж ноги, що й `cryptoTxId`).
-- `fiatCurrency` + `fiatAmount numeric(38,0)`↔`BigInt` + `fiatDecimals` — фіатна
-  собівартість (з `transactions.metadata` крипто-ноги: `fiatAmountMinor`/
+## `crypto_purchases` (step 5)
+- **PK** `id` uuid. Result of the card↔crypto matching post-processing stage — written
+  only by `MatchingService` (`npm run match`); providers and `SyncService` do not know
+  about this table. → [[Invariants]] #5, [[Card↔Crypto Matching]]
+- **`cryptoTxId`** — FK → `transactions.id`, `ON DELETE CASCADE`, **`UNIQUE`**:
+  at most one `CryptoPurchase` per crypto inflow (one leg = one record).
+- **`cardTxId`** — FK → `transactions.id`, `ON DELETE SET NULL`, nullable: the card
+  debit that financed the purchase, if a match was found; `null` = unmatched. Index
+  on `cardTxId`.
+- `asset` + `cryptoAmount numeric(38,0)`↔`BigInt` + `cryptoDecimals` — crypto side
+  (the same leg as `cryptoTxId`).
+- `fiatCurrency` + `fiatAmount numeric(38,0)`↔`BigInt` + `fiatDecimals` — fiat
+  cost basis (from `transactions.metadata` on the crypto leg: `fiatAmountMinor`/
   `fiatCurrencyCode`/`fiatDecimals`).
-- `rate varchar` — курс, **рядок** (float-free), копіюється як є з джерела.
-- `rateSource` — `'CSV'` (P2P, крок 5) або `'NBU'` (estimate, крок 6).
-- `matchType` — `'p2p'` (крок 5) або `'estimate'` (крок 6).
-- `confidence real, nullable` — якість метчу в `[0,1]`; `null`, коли кандидата немає.
-- `manualOverride boolean default false` — коли `true`, апсерт по `cryptoTxId`
-  (`ON CONFLICT ... DO UPDATE ... WHERE "manualOverride" = false`) цей рядок більше не
-  чіпає — ручне рішення користувача остаточне до явної зміни.
+- `rate varchar` — exchange rate, a **string** (float-free), copied as-is from the source.
+- `rateSource` — `'CSV'` (P2P, step 5) or `'NBU'` (estimate, step 6).
+- `matchType` — `'p2p'` (step 5) or `'estimate'` (step 6).
+- `confidence real, nullable` — match quality in `[0,1]`; `null` when there is no candidate.
+- `manualOverride boolean default false` — when `true`, upsert by `cryptoTxId`
+  (`ON CONFLICT ... DO UPDATE ... WHERE "manualOverride" = false`) no longer touches
+  this row — the user’s manual decision is final until explicitly changed.
 
-## Міграції
-1. `1719660000000-CreateTransactions` — таблиця `transactions`, UNIQUE, індекс.
-2. `1719660000001-AddAccounts` — таблиця `accounts`, `transactions.accountId` FK+індекс,
-   **бекфіл** existing рядків із `metadata->>'accountId'`.
-3. `1719660000002-AddCryptoPurchases` — таблиця `crypto_purchases`, FK `cryptoTxId`
-   (CASCADE, UNIQUE) + `cardTxId` (SET NULL), індекс на `cardTxId`.
+## Migrations
+1. `1719660000000-CreateTransactions` — `transactions` table, UNIQUE, index.
+2. `1719660000001-AddAccounts` — `accounts` table, `transactions.accountId` FK+index,
+   **backfill** existing rows from `metadata->>'accountId'`.
+3. `1719660000002-AddCryptoPurchases` — `crypto_purchases` table, FK `cryptoTxId`
+   (CASCADE, UNIQUE) + `cardTxId` (SET NULL), index on `cardTxId`.
 
-## Плановані сутності
-- Estimate-розширення `CryptoPurchase` для unmatched депозитів (курс НБУ) — крок 6.
+## Planned entities
+- Estimate extension `CryptoPurchase` for unmatched deposits (NBU rate) — step 6.
   → [[Card↔Crypto Matching]]

@@ -13,7 +13,9 @@ resolve. Keep it that way when editing this file.
 
 **L1 — injected automatically.** `SessionStart`/`SubagentStart` hooks (`.claude/settings.json`)
 feed you `_gen/context.txt`: invariants, status, entities, migrations, providers, env, tests, DoD.
-Do not re-read it; if it is missing, read that file first.
+Do not re-read it; if it is missing, read that file first. `SessionStart` alone also appends the
+cached evidence digest (below); subagents do not get it, because a delegated task was already
+chosen and a priority list is only an invitation to drift off it.
 
 **L2 — locate:** `node tools/vault/v.mjs find "<query>"` → ranked `path#N :: heading`.
 Query in English — `tools/vault/synonyms.tsv` is the en↔uk bridge.
@@ -34,13 +36,13 @@ symbols, generated) instead of grepping. Never read `backend/dist/`.
 
 ## Key invariants (generated from `Architecture/Invariants.md` — do not hand-edit)
 <!-- auto:invariants begin -->
-- 1. Гроші — ціле в мінорних одиницях, ніколи float
-- 2. Дати — UTC у БД
-- 3. Ядро не знає про джерело
-- 4. Дедуп і мультитенантність
-- 5. Метчинг — окремий шар post-processing
-- 6. Сайд-ефекти — тільки через подію
-- 7. Секрети — лише env/secrets
+- 1. Money is always integers in minor units, never float
+- 2. Dates are UTC in the DB
+- 3. The core does not know about the source
+- 4. Dedup and multi-tenancy
+- 5. Matching is a separate post-processing stage
+- 6. Side effects — only through events
+- 7. Secrets — env/secrets only
 <!-- auto:invariants end -->
 
 Full text: [[Invariants]]. This block is generated, so it cannot diverge from the note.
@@ -73,10 +75,16 @@ evidence [--dry] [--json]        run `_metrics.tsv` against the live DB; ranks p
 
 `evidence` is the Observe stage of the product loop: it answers **which plan the data justifies
 now**, so priorities are measured rather than asserted. A fired trigger means *act on that plan*.
-It reads live data, so it is deliberately **not** part of `check` and never runs in a hook, and
-its output is gitignored (`tools/vault/.evidence.tsv`) — it describes this machine's data, not
-repo state. Numbers are directional, never statistical: one user, small n. A plan with no metric
-(Plan 00) is decided by judgement — absence of a row is not evidence against it.
+It reads live data, so the **measurement** is deliberately not part of `check` and never runs in a
+hook, and its output is gitignored (`tools/vault/.evidence.tsv`) — it describes this machine's
+data, not repo state. Numbers are directional, never statistical: one user, small n. A plan with
+no metric (Plan 00) is decided by judgement — absence of a row is not evidence against it.
+
+What the hook injects is that **cached file**, never a query — so session start costs nothing and
+works with the database down. A cached run goes stale two ways: older than 14 days, or
+`_metrics.tsv` changed since it ran (the output stamps a digest of the parsed metrics, so
+rewording a comment does not invalidate it). Either way the block stops reporting numbers and asks
+for a re-run — if you see that and you are choosing what to build, run `vault evidence` first.
 From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide|ctx`.
 
 Use `decide` for **rejected** approaches too — what a previous agent tried and discarded has no
@@ -117,8 +125,8 @@ here — there used to be 3 divergent versions.
 A task is not done until the vault is updated; that is part of DoD.
 
 1. `Roadmap & Status.md` is the **only source of truth for status**. Status verbs
-   («реалізовано», «прогнано», «зелений») elsewhere trip `status-leak`. A scope label
-   («крок 5») is fine — that is not a status claim.
+   (“implemented”, “rejected”, “green”) elsewhere trip `status-leak`. A scope label
+   (“step 5”) is fine — that is not a status claim.
 2. Schema/entities → `Architecture/Data Model.md`; sync/providers/events → the matching
    `Architecture/` note. Changing code under a note's `code:` makes its `rev:` stale
    (`rev-stale` is an **error**, it blocks the commit): review the note, then `vault pin`.

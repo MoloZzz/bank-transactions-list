@@ -1,34 +1,34 @@
+﻿---
+summary: Meaningful observations and advice: deterministic first, then an LLM monthly review.
 ---
-summary: Осмислені спостереження й поради: спершу детерміновані, потім LLM-огляд місяця.
----
-# Plan 06 — Insights (поради)
+# Plan 06 — Insights (advice)
 
-## Мета
-Система дає осмислені спостереження й поради: спершу детерміновані (rule-based),
-потім LLM-огляд місяця.
+## Goal
+The system provides meaningful observations and advice: deterministic (rule-based) first,
+then an LLM monthly review.
 
 ## Scope
-- In: генератор rule-based insights у дайджест; опційний LLM-шар для місячного огляду.
-- Out: чат із фінансовим асистентом; автоматичні дії за порадами.
+- In: rule-based insight generator in the digest; optional LLM layer for the monthly review.
+- Out: chat with a financial assistant; automatic actions based on advice.
 
-## Кроки
-1. `InsightGenerator`: набір правил над агрегатами ([[Plan 03 — Агрегації]]):
-   - категорія X: +N% до середнього за 3 міс (поріг з конфігу, напр. ≥30%);
-   - savings rate впав/зріс порівняно з попереднім місяцем;
-   - підписки: сумарно ≥N% витрат / нова дорога підписка;
-   - незвично багато дрібних витрат у категорії (frequency spike);
-   - крипто: середня собівартість покупок місяця vs попередній.
-2. Insights додаються секцією в дайджест ([[Plan 05 — Alerts і Telegram]]).
-3. LLM-шар (опційний, off за замовчуванням, `INSIGHTS_LLM=on`):
-   - вхід — **лише агрегати й insights** (жодних сирих транзакцій/merchant-назв
-     поза потребою) — контроль приватності й токенів;
-   - вихід — короткий місячний огляд українською в дайджест;
-   - провайдер/ключ з env (NR3), помилка LLM не ламає дайджест.
+## Steps
+1. `InsightGenerator`: set of rules over aggregates ([[Plan 03 — Aggregations]]):
+   - category X: +N% over the 3-month average (configurable threshold, e.g. ≥30%);
+   - savings rate fell/rose compared with the previous month;
+   - subscriptions: total ≥N% of expenses / new expensive subscription;
+   - unusually many small expenses in a category (frequency spike);
+   - crypto: average cost basis of the month's purchases vs the previous month.
+2. Add insights as a section in the digest ([[Plan 05 — Alerts & Telegram]]).
+3. LLM layer (optional, off by default, `INSIGHTS_LLM=on`):
+   - input — **aggregates and insights only** (no raw transactions/merchant names
+     beyond what is needed) — privacy and token control;
+   - output — a short monthly review in Ukrainian in the digest;
+   - provider/key from env (NR3), and an LLM error does not break the digest.
 
-## Критерії приймання
-- [ ] Rule-based insights детерміновані на фікстурах (снапшот-тести текстів).
-- [ ] Пороги конфігуруються; нижче порога — тиша (негативні тести).
-- [ ] LLM вимкнений за замовчуванням; без ключа все працює.
-- [ ] У промпт LLM потрапляють тільки агрегати (тест на склад payload).
-- [ ] Збій LLM → дайджест виходить без огляду, з логом (ізоляція).
-- [ ] `tsc` чистий, наявні тести зелені.
+## Acceptance criteria
+- [ ] Rule-based insights are deterministic on fixtures (snapshot tests of the text).
+- [ ] Thresholds are configurable; below the threshold — no output (negative tests).
+- [ ] LLM is disabled by default; everything works without a key.
+- [ ] Only aggregates enter the LLM prompt (test payload contents).
+- [ ] LLM failure → digest is delivered without the review, with a log (isolation).
+- [ ] `tsc` is clean, and existing tests are green.

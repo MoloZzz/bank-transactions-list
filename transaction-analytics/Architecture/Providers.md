@@ -1,5 +1,5 @@
 ---
-summary: Контракт TransactionProvider: fetch плюс мапінг у NormalizedTransaction, нуль бізнес-логіки.
+summary: TransactionProvider contract: fetch plus map into NormalizedTransaction, zero business logic.
 code:
   - src/providers/**
   - src/core/provider/**
@@ -7,37 +7,38 @@ rev: e9bf8bcc3be6
 ---
 # Providers
 
-Єдиний контракт, який знає ядро. Нове джерело = нова реалізація, ядро не чіпається
+The only contract the core knows. A new source = a new implementation, core untouched
 (→ [[Invariants]] #3).
 
-## Контракт
+## Contract
 ```ts
 interface TransactionProvider {
   readonly source: string;                 // 'monobank', 'binance_p2p_csv', ...
   fetch(sinceSec?: number): Promise<NormalizedTransaction[]>;
 }
 ```
-- `source` — стабільний ключ джерела.
-- `fetch(sinceSec?)` — тягне + мапить сирі поля у `NormalizedTransaction`. `sinceSec` —
-  watermark від синку (інкрементально); без нього — власний floor (повний бекфіл).
-- **Тільки** fetch + мапінг. Нуль бізнес-логіки, нуль сайд-ефектів, нуль знання про метчинг.
+- `source` — stable source key.
+- `fetch(sinceSec?)` — loads + maps raw fields into `NormalizedTransaction`.
+  `sinceSec` is the sync watermark (incremental); without it — its own floor
+  (full backfill).
+- **Only** fetch + mapping. Zero business logic, zero side effects, zero knowledge of matching.
 
-## NormalizedTransaction (канонічна форма)
+## NormalizedTransaction (canonical form)
 `source`, `externalId`, `amount: bigint`, `currencyCode`, `decimals`, `type`,
 `bookedAt: Date (UTC)`, `account?: NormalizedAccount`, `metadata?`.
-Валідується `toNormalized()` (BigInt/scale/UTC/непорожні поля) — спільний гейт перед БД.
+Validated by `toNormalized()` (BigInt/scale/UTC/non-empty fields) — a shared gate before the DB.
 
-## Спільні хелпери (`src/core/normalize`)
-- `buildExternalId(parts)` — sha256 стабільних полів для CSV без власного id.
-- `parseDecimalToMinor` / `formatMinor` — float-free конвертація рядок↔BigInt.
-- `toNormalized` — гейт інваріантів.
+## Shared helpers (`src/core/normalize`)
+- `buildExternalId(parts)` — sha256 of stable fields for CSV without a native id.
+- `parseDecimalToMinor` / `formatMinor` — float-free string↔BigInt conversion.
+- `toNormalized` — invariant gate.
 
-## Реалізації
-- **[[Monobank]]** — API, вікна, rate-limit, крос-валюта.
+## Implementations
+- **[[Monobank]]** — API, windows, rate limit, cross-currency.
 - **[[Crypto CSV]]** — Binance P2P + deposit (`binance_p2p_csv` / `binance_deposit_csv`,
-  два CSV-провайдери + спільні хелпери).
-- **[[Bank CSV]]** — Privat/generic (пізніше, крок 7).
+  two CSV providers + shared helpers).
+- **[[Bank CSV]]** — Privat/generic (later, step 7).
 
-## Реєстрація
-У `app.module.ts` фабрика `TRANSACTION_PROVIDERS` збирає масив із env. Додати джерело =
-**+1 рядок** у фабриці; решта не змінюється.
+## Registration
+In `app.module.ts` the `TRANSACTION_PROVIDERS` factory builds an array from env. Adding
+a source = **+1 line** in the factory; the rest does not change.

@@ -103,36 +103,36 @@
       "outDeg": 3
     },
     {
-      "name": "Plan 01 — Категоризація",
-      "rel": "Plans/Plan 01 — Категоризація.md",
+      "name": "Plan 01 — Categorization",
+      "rel": "Plans/Plan 01 — Categorization.md",
       "type": "plan",
       "inDeg": 1,
       "outDeg": 1
     },
     {
-      "name": "Plan 02 — Гігієна даних",
-      "rel": "Plans/Plan 02 — Гігієна даних.md",
+      "name": "Plan 02 — Data Hygiene",
+      "rel": "Plans/Plan 02 — Data Hygiene.md",
       "type": "plan",
       "inDeg": 3,
       "outDeg": 1
     },
     {
-      "name": "Plan 03 — Агрегації",
-      "rel": "Plans/Plan 03 — Агрегації.md",
+      "name": "Plan 03 — Aggregations",
+      "rel": "Plans/Plan 03 — Aggregations.md",
       "type": "plan",
       "inDeg": 4,
       "outDeg": 1
     },
     {
-      "name": "Plan 04 — Бюджети й цілі",
-      "rel": "Plans/Plan 04 — Бюджети й цілі.md",
+      "name": "Plan 04 — Budgets & Goals",
+      "rel": "Plans/Plan 04 — Budgets & Goals.md",
       "type": "plan",
       "inDeg": 2,
       "outDeg": 2
     },
     {
-      "name": "Plan 05 — Alerts і Telegram",
-      "rel": "Plans/Plan 05 — Alerts і Telegram.md",
+      "name": "Plan 05 — Alerts & Telegram",
+      "rel": "Plans/Plan 05 — Alerts & Telegram.md",
       "type": "plan",
       "inDeg": 2,
       "outDeg": 4
@@ -145,8 +145,8 @@
       "outDeg": 2
     },
     {
-      "name": "Plan 07 — Метчинг card↔crypto (крок 5)",
-      "rel": "Plans/Plan 07 — Метчинг card↔crypto (крок 5).md",
+      "name": "Plan 07 — Card↔Crypto Matching (step 5)",
+      "rel": "Plans/Plan 07 — Card↔Crypto Matching (step 5).md",
       "type": "plan",
       "inDeg": 1,
       "outDeg": 11
@@ -316,56 +316,56 @@
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 01 — Категоризація",
+      "to": "Plan 01 — Categorization",
       "anchor": null,
       "embed": false,
       "line": 22
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 01 — Категоризація",
+      "to": "Plan 01 — Categorization",
       "anchor": null,
       "embed": false,
       "line": 23
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 02 — Гігієна даних",
+      "to": "Plan 02 — Data Hygiene",
       "anchor": null,
       "embed": false,
       "line": 25
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 02 — Гігієна даних",
+      "to": "Plan 02 — Data Hygiene",
       "anchor": null,
       "embed": false,
       "line": 27
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 02 — Гігієна даних",
+      "to": "Plan 02 — Data Hygiene",
       "anchor": null,
       "embed": false,
       "line": 28
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 03 — Агрегації",
+      "to": "Plan 03 — Aggregations",
       "anchor": null,
       "embed": false,
       "line": 36
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 04 — Бюджети й цілі",
+      "to": "Plan 04 — Budgets & Goals",
       "anchor": null,
       "embed": false,
       "line": 42
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 05 — Alerts і Telegram",
+      "to": "Plan 05 — Alerts & Telegram",
       "anchor": null,
       "embed": false,
       "line": 48
@@ -379,7 +379,7 @@
     },
     {
       "from": "Analytics & Control — Backlog",
-      "to": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "to": "Plan 07 — Card↔Crypto Matching (step 5)",
       "anchor": null,
       "embed": false,
       "line": 57
@@ -403,49 +403,49 @@
       "to": "Data Model",
       "anchor": null,
       "embed": false,
-      "line": 50
+      "line": 45
     },
     {
       "from": "Architecture Overview",
       "to": "Events & Export",
       "anchor": null,
       "embed": false,
-      "line": 49
+      "line": 44
     },
     {
       "from": "Architecture Overview",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
-      "line": 7
+      "line": 6
     },
     {
       "from": "Architecture Overview",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
-      "line": 57
+      "line": 51
     },
     {
       "from": "Architecture Overview",
       "to": "Providers",
       "anchor": null,
       "embed": false,
-      "line": 7
+      "line": 6
     },
     {
       "from": "Architecture Overview",
       "to": "Providers",
       "anchor": null,
       "embed": false,
-      "line": 43
+      "line": 41
     },
     {
       "from": "Architecture Overview",
       "to": "Sync Engine",
       "anchor": null,
       "embed": false,
-      "line": 47
+      "line": 43
     },
     {
       "from": "Bank CSV",
@@ -480,7 +480,14 @@
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 54
+      "line": 51
+    },
+    {
+      "from": "Card↔Crypto Matching",
+      "to": "Invariants",
+      "anchor": null,
+      "embed": false,
+      "line": 11
     },
     {
       "from": "Card↔Crypto Matching",
@@ -491,24 +498,17 @@
     },
     {
       "from": "Card↔Crypto Matching",
-      "to": "Invariants",
-      "anchor": null,
-      "embed": false,
-      "line": 14
-    },
-    {
-      "from": "Card↔Crypto Matching",
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 53
+      "line": 50
     },
     {
       "from": "Card↔Crypto Matching",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 57
+      "line": 54
     },
     {
       "from": "Crypto CSV",
@@ -648,42 +648,42 @@
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
-      "line": 49
+      "line": 52
     },
     {
       "from": "Decision Log",
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
-      "line": 65
+      "line": 70
     },
     {
       "from": "Decision Log",
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
-      "line": 71
+      "line": 76
     },
     {
       "from": "Decision Log",
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 42
+      "line": 45
     },
     {
       "from": "Decision Log",
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 49
+      "line": 52
     },
     {
       "from": "Decision Log",
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 58
+      "line": 63
     },
     {
       "from": "Decision Log",
@@ -697,14 +697,14 @@
       "to": "Data Model",
       "anchor": null,
       "embed": false,
-      "line": 60
+      "line": 65
     },
     {
       "from": "Decision Log",
       "to": "Events & Export",
       "anchor": null,
       "embed": false,
-      "line": 94
+      "line": 98
     },
     {
       "from": "Decision Log",
@@ -725,63 +725,63 @@
       "to": "Invariants",
       "anchor": null,
       "embed": false,
-      "line": 78
+      "line": 82
     },
     {
       "from": "Decision Log",
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 29
+      "line": 31
     },
     {
       "from": "Decision Log",
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 38
+      "line": 41
     },
     {
       "from": "Decision Log",
       "to": "Providers",
       "anchor": null,
       "embed": false,
-      "line": 52
+      "line": 56
     },
     {
       "from": "Decision Log",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 103
+      "line": 108
     },
     {
       "from": "Decision Log",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 115
+      "line": 145
     },
     {
       "from": "Decision Log",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 117
+      "line": 155
     },
     {
       "from": "Decision Log",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 120
+      "line": 168
     },
     {
       "from": "Decision Log",
       "to": "Sync Engine",
       "anchor": null,
       "embed": false,
-      "line": 34
+      "line": 36
     },
     {
       "from": "Events & Export",
@@ -830,7 +830,7 @@
       "to": "Data Model",
       "anchor": null,
       "embed": false,
-      "line": 31
+      "line": 30
     },
     {
       "from": "Glossary",
@@ -872,7 +872,7 @@
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
-      "line": 32
+      "line": 33
     },
     {
       "from": "Invariants",
@@ -886,14 +886,14 @@
       "to": "Events & Export",
       "anchor": null,
       "embed": false,
-      "line": 37
+      "line": 38
     },
     {
       "from": "Invariants",
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 49
+      "line": 50
     },
     {
       "from": "Invariants",
@@ -952,154 +952,154 @@
       "line": 20
     },
     {
-      "from": "Plan 01 — Категоризація",
+      "from": "Plan 01 — Categorization",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 34
     },
     {
-      "from": "Plan 02 — Гігієна даних",
+      "from": "Plan 02 — Data Hygiene",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 35
     },
     {
-      "from": "Plan 03 — Агрегації",
+      "from": "Plan 03 — Aggregations",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 24
     },
     {
-      "from": "Plan 04 — Бюджети й цілі",
-      "to": "Plan 02 — Гігієна даних",
+      "from": "Plan 04 — Budgets & Goals",
+      "to": "Plan 02 — Data Hygiene",
       "anchor": null,
       "embed": false,
       "line": 23
     },
     {
-      "from": "Plan 04 — Бюджети й цілі",
-      "to": "Plan 03 — Агрегації",
+      "from": "Plan 04 — Budgets & Goals",
+      "to": "Plan 03 — Aggregations",
       "anchor": null,
       "embed": false,
       "line": 20
     },
     {
-      "from": "Plan 05 — Alerts і Telegram",
+      "from": "Plan 05 — Alerts & Telegram",
       "to": "Events & Export",
       "anchor": null,
       "embed": false,
       "line": 33
     },
     {
-      "from": "Plan 05 — Alerts і Telegram",
-      "to": "Plan 02 — Гігієна даних",
+      "from": "Plan 05 — Alerts & Telegram",
+      "to": "Plan 02 — Data Hygiene",
       "anchor": null,
       "embed": false,
       "line": 24
     },
     {
-      "from": "Plan 05 — Alerts і Telegram",
-      "to": "Plan 03 — Агрегації",
+      "from": "Plan 05 — Alerts & Telegram",
+      "to": "Plan 03 — Aggregations",
       "anchor": null,
       "embed": false,
       "line": 27
     },
     {
-      "from": "Plan 05 — Alerts і Telegram",
-      "to": "Plan 04 — Бюджети й цілі",
+      "from": "Plan 05 — Alerts & Telegram",
+      "to": "Plan 04 — Budgets & Goals",
       "anchor": null,
       "embed": false,
       "line": 28
     },
     {
       "from": "Plan 06 — Insights",
-      "to": "Plan 03 — Агрегації",
+      "to": "Plan 03 — Aggregations",
       "anchor": null,
       "embed": false,
       "line": 15
     },
     {
       "from": "Plan 06 — Insights",
-      "to": "Plan 05 — Alerts і Telegram",
+      "to": "Plan 05 — Alerts & Telegram",
       "anchor": null,
       "embed": false,
       "line": 21
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
       "line": 10
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Card↔Crypto Matching",
       "anchor": null,
       "embed": false,
       "line": 24
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Data Model",
       "anchor": null,
       "embed": false,
       "line": 31
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Data Model",
       "anchor": null,
       "embed": false,
       "line": 34
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Data Model",
       "anchor": null,
       "embed": false,
       "line": 58
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Decision Log",
       "anchor": null,
       "embed": false,
       "line": 58
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 9
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 10
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 34
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
       "line": 60
     },
     {
-      "from": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "from": "Plan 07 — Card↔Crypto Matching (step 5)",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
@@ -1110,14 +1110,14 @@
       "to": "Bank CSV",
       "anchor": null,
       "embed": false,
-      "line": 39
+      "line": 40
     },
     {
       "from": "Providers",
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 37
+      "line": 38
     },
     {
       "from": "Providers",
@@ -1131,14 +1131,14 @@
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 36
+      "line": 37
     },
     {
       "from": "Requirements",
       "to": "Bank CSV",
       "anchor": null,
       "embed": false,
-      "line": 13
+      "line": 12
     },
     {
       "from": "Requirements",
@@ -1159,21 +1159,21 @@
       "to": "Crypto CSV",
       "anchor": null,
       "embed": false,
-      "line": 12
+      "line": 11
     },
     {
       "from": "Requirements",
       "to": "Data Model",
       "anchor": null,
       "embed": false,
-      "line": 15
+      "line": 14
     },
     {
       "from": "Requirements",
       "to": "Data Model",
       "anchor": null,
       "embed": false,
-      "line": 23
+      "line": 22
     },
     {
       "from": "Requirements",
@@ -1194,14 +1194,14 @@
       "to": "Invariants",
       "anchor": null,
       "embed": false,
-      "line": 17
+      "line": 16
     },
     {
       "from": "Requirements",
       "to": "Invariants",
       "anchor": null,
       "embed": false,
-      "line": 27
+      "line": 26
     },
     {
       "from": "Requirements",
@@ -1222,7 +1222,7 @@
       "to": "Monobank",
       "anchor": null,
       "embed": false,
-      "line": 10
+      "line": 9
     },
     {
       "from": "Requirements",
@@ -1243,14 +1243,14 @@
       "to": "Providers",
       "anchor": null,
       "embed": false,
-      "line": 15
+      "line": 14
     },
     {
       "from": "Requirements",
       "to": "Roadmap & Status",
       "anchor": null,
       "embed": false,
-      "line": 7
+      "line": 6
     },
     {
       "from": "Requirements",
@@ -1264,7 +1264,7 @@
       "to": "Sync Engine",
       "anchor": null,
       "embed": false,
-      "line": 19
+      "line": 18
     },
     {
       "from": "Roadmap & Status",
@@ -1485,13 +1485,13 @@
       "Invariants",
       "Monobank",
       "Plan 00 — Bank CSV",
-      "Plan 01 — Категоризація",
-      "Plan 02 — Гігієна даних",
-      "Plan 03 — Агрегації",
-      "Plan 04 — Бюджети й цілі",
-      "Plan 05 — Alerts і Telegram",
+      "Plan 01 — Categorization",
+      "Plan 02 — Data Hygiene",
+      "Plan 03 — Aggregations",
+      "Plan 04 — Budgets & Goals",
+      "Plan 05 — Alerts & Telegram",
       "Plan 06 — Insights",
-      "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "Plan 07 — Card↔Crypto Matching (step 5)",
       "Providers",
       "Requirements",
       "Roadmap & Status",

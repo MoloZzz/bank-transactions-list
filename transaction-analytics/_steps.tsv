@@ -1,4 +1,4 @@
-# Roadmap step -> plan note -> code evidence.
+﻿# Roadmap step -> plan note -> code evidence.
 #
 # step <TAB> plan_note (or -) <TAB> evidence path (or -)
 #
@@ -13,6 +13,6 @@
 2	-	backend/src/core/normalize/normalize.ts
 3	-	backend/src/providers/monobank/monobank.provider.ts
 4	-	backend/src/providers/binance/binance-p2p.provider.ts
-5	Plans/Plan 07 — Метчинг card↔crypto (крок 5).md	backend/src/matching/matching.service.ts
+5	Plans/Plan 07 — Card↔Crypto Matching (step 5).md	backend/src/matching/matching.service.ts
 6	-	-
 7	Plans/Plan 00 — Bank CSV.md	-

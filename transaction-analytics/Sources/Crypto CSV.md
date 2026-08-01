@@ -1,104 +1,104 @@
 ---
-summary: Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.
+summary: Binance P2P and deposit CSV: column formats, asset scales, and the externalId hash.
 code:
   - src/providers/binance/**
 rev: 7a9c952b4991
 ---
 # Crypto CSV
 
-Джерело крипти з Binance CSV (`backend/src/providers/binance/`). Статус — [[Roadmap & Status]].
+Crypto source from Binance CSV (`backend/src/providers/binance/`). Status — [[Roadmap & Status]].
 → [[Roadmap & Status]]
 
-## Два провайдери (кожен = окремий parser + окремий `source`)
+## Two providers (each = a separate parser + separate `source`)
 1. **`BinanceP2pProvider`** (`source: 'binance_p2p_csv'`) — Binance P2P order history:
-   fiat-сума, **курс**, к-сть крипти. → критично для [[Card↔Crypto Matching]] (курс беремо
-   з CSV, самі не рахуємо). Контекст (курс, fiat-сума, контрагент) кладемо в `metadata`.
+   fiat amount, **rate**, crypto quantity. → critical for [[Card↔Crypto Matching]] (the rate comes
+   from the CSV; we do not calculate it ourselves). Context (rate, fiat amount, counterparty) goes in `metadata`.
 2. **`BinanceDepositProvider`** (`source: 'binance_deposit_csv'`) — Binance deposit history:
-   on-chain поповнення, **без fiat**. Для оцінки собівартості потрібен курс НБУ на дату
-   (estimate). → [[Card↔Crypto Matching]] сценарій 2.
+   on-chain deposits, **without fiat**. Estimating cost basis requires the NBU rate for the date
+   (estimate). → [[Card↔Crypto Matching]] scenario 2.
 
-Визначення формату (який файл — P2P чи deposit) — на рівні **конфігурації** (два окремих
-env-шляхи, `BINANCE_P2P_CSV_PATH` / `BINANCE_DEPOSIT_CSV_PATH`), не автовизначення за
-вмістом.
+Format selection (which file is P2P or deposit) is handled in **configuration** (two separate
+env paths, `BINANCE_P2P_CSV_PATH` / `BINANCE_DEPOSIT_CSV_PATH`), not auto-detected from
+content.
 
-## ФАКТИЧНИЙ ФОРМАТ КОЛОНОК (припущення — Binance не документує публічну CSV-схему)
-Офіційної специфікації колонок цих двох CSV не знайдено (P2P/Deposit export UI сам генерує
-файл; публічної схеми немає). Парсер розрахований на **реалістичний, але не 1:1-підтверджений**
-формат; якщо реальний експорт користувача відрізняється — потрібно підправити лише
-відповідний `binance-*.provider.ts` (мапінг колонок), контракт/ядро не зачіпається.
+## ACTUAL COLUMN FORMAT (assumption — Binance does not document a public CSV schema)
+No official column specification for these two CSVs was found (the P2P/Deposit export UI generates
+the file itself; there is no public schema). The parser targets a **realistic but not 1:1-confirmed**
+format; if a user's actual export differs, only the corresponding
+`binance-*.provider.ts` (column mapping) needs adjustment; the contract/core is untouched.
 
-**P2P order history** (`__fixtures__/p2p-orders.sample.csv`), заголовок:
+**P2P order history** (`__fixtures__/p2p-orders.sample.csv`), header:
 ```
 Order Number,Order Type,Asset Type,Fiat Type,Total Price,Price,Quantity,Time(UTC),Counterparty,Status
 ```
-- `Order Type` — `BUY`/`SELL` з точки зору власника акаунту.
-- `Time(UTC)` — `YYYY-MM-DD HH:mm:ss`, вже UTC (без конвертації таймзони).
-- `Quantity`/`Total Price` — можуть бути надруковані з зайвими нулями після коми
-  (напр. `320.00000000`) незалежно від реального scale активу.
+- `Order Type` — `BUY`/`SELL` from the account owner's perspective.
+- `Time(UTC)` — `YYYY-MM-DD HH:mm:ss`, already UTC (without timezone conversion).
+- `Quantity`/`Total Price` — may be printed with extra zeros after the decimal
+  (e.g. `320.00000000`) regardless of the asset's actual scale.
 
-**Deposit history** (`__fixtures__/deposit-history.sample.csv`), заголовок:
+**Deposit history** (`__fixtures__/deposit-history.sample.csv`), header:
 ```
 Date(UTC),Coin,Amount,Network,Address,TXID,Status
 ```
-- `Date(UTC)` — той самий формат, що й P2P `Time(UTC)`.
-- `TXID` — обов'язковий (рядок без нього відкидається помилкою; це єдиний надійний
-  природний ключ для on-chain депозиту).
+- `Date(UTC)` — the same format as the P2P `Time(UTC)`.
+- `TXID` — required (a row without it is rejected with an error; it is the only reliable
+  natural key for an on-chain deposit).
 
-## Модель / мапінг
-- Типи `buy/sell/deposit` (з `TransactionType`) лягають у ту саму
-  [[Data Model|NormalizedTransaction]] (окрема таблиця не потрібна). `fee`/`withdraw`
-  поза скоупом — немає джерела даних під них.
-- **P2P → одна нога = крипто-частина ордера.** `BUY` → додатний inflow крипти, `SELL` →
-  від'ємний outflow. Fiat-сторона (сума + курс) не отримує власного рядка — вона живе в
-  `metadata` (`fiatAmountMinor` як **рядок** мінорних одиниць — не BigInt/float,
-  `fiatCurrencyCode`, `fiatDecimals`, `rate` як сирий рядок з CSV, `counterparty`,
-  `tradeRef` = номер ордера). `tradeRef` — самопосилання на майбутнє (гак під
-  крок 5/можливе групування кількох рядків одного трейду).
-- **Deposit → одна нога = вхідний рух активу**, без fiat/`tradeRef`. `metadata`:
+## Model / mapping
+- Types `buy/sell/deposit` (from `TransactionType`) map to the same
+  [[Data Model|NormalizedTransaction]] (no separate table is needed). `fee`/`withdraw`
+  are out of scope — there is no data source for them.
+- **P2P → one leg = the crypto part of the order.** `BUY` → positive crypto inflow, `SELL` →
+  negative outflow. The fiat side (amount + rate) gets no separate row — it lives in
+  `metadata` (`fiatAmountMinor` as a **string** of minor units — not BigInt/float,
+  `fiatCurrencyCode`, `fiatDecimals`, `rate` as the raw CSV string, `counterparty`,
+  `tradeRef` = order number). `tradeRef` is a forward reference (a hook for
+  step 5/possible grouping of multiple rows from one trade).
+- **Deposit → one leg = incoming asset movement**, without fiat/`tradeRef`. `metadata`:
   `txId`, `network`, `address`, `status`.
-- Жоден із двох провайдерів не додає `account` (немає концепції «картка/акаунт» для
-  цих CSV — `accountId` лишається `null`, це прямо дозволено [[Data Model]]).
+- Neither provider adds an `account` (these CSVs have no «card/account» concept —
+  `accountId` remains `null`, explicitly allowed by [[Data Model]]).
 - `externalId` — `buildExternalId(['binance_p2p_csv', orderNumber])` /
-  `buildExternalId(['binance_deposit_csv', coin, txId])`. Хешуємо навіть коли CSV має
-  власний id (order number / TXID) — єдина схема externalId для всіх CSV-провайдерів,
-  стійка до майбутньої зміни формату колонок.
-- Суми — мінорні одиниці активу зі своїм `decimals`; таблиця в `providers/binance/asset.ts`
-  (**припущення, задокументовано в коді**): `USDT`/`USDC` = 6, `BTC` = 8, `ETH`/`BUSD` = 18,
-  невідомий актив → фолбек 8 (типова точність показу в UI Binance). Якщо реальний актив
-  має інший canonical scale — це єдине місце для правки.
-- CSV-числа з надлишковими нулями після коми (Binance часто друкує `320.00000000`
-  незалежно від реального scale) тримаються **float-free**: `trimTrailingZeroFraction`
-  (рядкова обрізка нулів) перед `parseDecimalToMinor` — реальна втрата точності (не-нульові
-  цифри понад заявлений `decimals`) все одно кидає виняток, як і належить за [[Invariants]] #1.
+  `buildExternalId(['binance_deposit_csv', coin, txId])`. We hash even when the CSV has
+  its own id (order number / TXID) — one externalId scheme for all CSV providers,
+  resilient to future column format changes.
+- Amounts are minor units of the asset with its own `decimals`; the table is in `providers/binance/asset.ts`
+  (**assumption, documented in code**): `USDT`/`USDC` = 6, `BTC` = 8, `ETH`/`BUSD` = 18,
+  unknown asset → fallback 8 (typical display precision in the Binance UI). If the real asset
+  has a different canonical scale, this is the only place to change.
+- CSV numbers with extra zeros after the decimal (Binance often prints `320.00000000`
+  regardless of the actual scale) remain **float-free**: `trimTrailingZeroFraction`
+  (string trimming of zeros) before `parseDecimalToMinor` — actual precision loss (non-zero
+  digits beyond the declared `decimals`) still throws, as required by [[Invariants]] #1.
 
-## Реалізація
-- `backend/src/providers/binance/csv.ts` — мінімальний CSV-парсер без залежностей
-  (лапки/коми/CRLF/BOM); генерик, не специфічний до Binance — придатний і для
-  [[Bank CSV]] (крок 7).
-- `backend/src/providers/binance/{asset,decimal,time}.ts` — scale-таблиця, обрізка нулів,
-  парсинг UTC-часу.
-- `backend/src/providers/binance/{binance-p2p,binance-deposit}.provider.ts` — самі
-  провайдери; шлях до файлу — через конструктор (`filePath`), не хардкод.
-- Конфігурація: `BINANCE_P2P_CSV_PATH` / `BINANCE_DEPOSIT_CSV_PATH` в `.env`
-  (`config/app-config.ts`); реєстрація — `+2 рядки` в `app.module.ts` фабриці
-  (`TRANSACTION_PROVIDERS`), решта ядра не змінена.
-- Тести: `*.spec.ts` на кожен хелпер і провайдер (дати/scale/хеш/tradeRef/обидва формати) +
-  `binance-csv.int-spec.ts` (import обох CSV → `SyncService` → Postgres, ідемпотентність).
-  Статус прогону й лічильники — лише в [[Roadmap & Status]] (єдине джерело правди);
-  актуальні числа генеруються в `_gen/context.txt`.
+## Implementation
+- `backend/src/providers/binance/csv.ts` — minimal dependency-free CSV parser
+  (quotes/commas/CRLF/BOM); generic, not Binance-specific — also suitable for
+  [[Bank CSV]] (step 7).
+- `backend/src/providers/binance/{asset,decimal,time}.ts` — scale table, zero trimming,
+  UTC time parsing.
+- `backend/src/providers/binance/{binance-p2p,binance-deposit}.provider.ts` — the
+  providers themselves; file path passed through the constructor (`filePath`), not hardcoded.
+- Configuration: `BINANCE_P2P_CSV_PATH` / `BINANCE_DEPOSIT_CSV_PATH` in `.env`
+  (`config/app-config.ts`); registration — `+2 rows` in the `app.module.ts` factory
+  (`TRANSACTION_PROVIDERS`), with the rest of the core unchanged.
+- Tests: `*.spec.ts` for each helper and provider (dates/scale/hash/tradeRef/both formats) +
+  `binance-csv.int-spec.ts` (import both CSVs → `SyncService` → Postgres, idempotency).
+  Run status and counts are only in [[Roadmap & Status]] (the single source of truth);
+  current numbers are generated in `_gen/context.txt`.
 
-## На майбутнє (не ламати зараз)
-Інвестиційний PnL потребуватиме lot-tracking (FIFO) і пар base/quote. Схему під це зараз
-**не будуємо**, але лишаємо місток: кожен крипто-рядок = одна нога руху активу, зв'язок
-ніг трейду — через `tradeRef`/`groupId` у `metadata`.
+## Future work (do not break this now)
+Investment PnL will require lot-tracking (FIFO) and base/quote pairs. We are **not building**
+the schema for this yet, but leave a bridge: each crypto row = one leg of an asset movement;
+trade legs are linked through `tradeRef`/`groupId` in `metadata`.
 
-## Відкриті питання
-- Точний формат колонок P2P/Deposit CSV не звірений з реальним експортом користувача
-  (Binance не публікує схему) — звірити при першому реальному імпорті й підправити
-  мапінг колонок за потреби.
-- `fee`/`withdraw` типи для крипти поки не мають провайдера-джерела (не було в скоупі
-  цього кроку).
+## Open questions
+- The exact P2P/Deposit CSV column format has not been checked against a real user export
+  (Binance does not publish a schema) — check it on the first real import and adjust
+  column mapping if needed.
+- Crypto `fee`/`withdraw` types do not yet have a source provider (they were out of scope
+  for this step).
 
-## Кодування
-CSV читати з урахуванням кодування/роздільників (тут зазвичай UTF-8, можливий BOM;
-парсер це враховує). Для банків — див. [[Bank CSV]].
+## Encoding
+Read CSVs with their encoding/separators in mind (usually UTF-8 here, with a possible BOM;
+the parser handles this). For banks, see [[Bank CSV]].

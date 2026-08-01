@@ -1,32 +1,32 @@
 ---
-summary: Повнота карткових даних: імпорт виписок інших банків як новий провайдер, без змін у ядрі.
+summary: Complete card data: import statements from other banks as a new provider, without core changes.
 ---
-# Plan 00 — Bank CSV імпорт
+# Plan 00 — Bank CSV import
 
-## Мета
-Повнота карткових даних: імпорт виписок інших банків (спершу Privat) як новий провайдер,
-без змін у ядрі.
+## Goal
+Complete card data: import statements from other banks (Privat first) as a new provider,
+without core changes.
 
 ## Scope
-- In: PrivatCsvParser + generic CSV parser, CLI-команда імпорту файлу.
-- Out: автоматичне завантаження виписок з API банків; веб-завантаження файлів.
+- In: PrivatCsvParser + generic CSV parser, CLI file import command.
+- Out: automatic statement downloads from bank APIs; web file uploads.
 
-## Кроки
-1. `FormatDetector` — визначення формату (банку) окремо від мапінгу.
-2. Декодування Windows-1251 → UTF-8 (iconv-lite), детект кодування.
-3. `PrivatCsvParser`: дати (локальний формат → UTC), кома-десятковий роздільник →
-   `parseDecimalToMinor`, мапінг у `NormalizedTransaction`.
-4. `externalId` = детермінований хеш рядка через `buildExternalId` (стабільного id нема).
-5. Провайдер `privat_csv` за контрактом [[Providers]]; прив'язка до Account
-   (створення рахунку з виписки, якщо нема).
+## Steps
+1. `FormatDetector` — detect the format (bank) separately from mapping.
+2. Decode Windows-1251 → UTF-8 (iconv-lite), detect encoding.
+3. `PrivatCsvParser`: dates (local format → UTC), comma decimal separator →
+   `parseDecimalToMinor`, map to `NormalizedTransaction`.
+4. `externalId` = deterministic row hash via `buildExternalId` (there is no stable id).
+5. `privat_csv` provider following the [[Providers]] contract; link to Account
+   (create the account from the statement if absent).
 6. CLI: `npm run import:csv -- --file=path --format=privat`.
 
-## Критерії приймання
-- [ ] Реальна виписка Privat імпортується; повторний імпорт того ж файлу — 0 нових рядків (R5).
-- [ ] Суми — цілі мінорні одиниці, жодного float ([[Invariants]] #1); крос-перевірка
-      підсумку по виписці = сума в БД.
-- [ ] Дати збережені в UTC ([[Invariants]] #2).
-- [ ] Ядро (normalize, sync, entity) не змінене — лише новий провайдер (NR1).
-- [ ] Unit: parser (кодування, дати, кома-десяткові, від'ємні суми, хеш стабільний).
-- [ ] Інтеграційний: import → БД проти реального Postgres.
-- [ ] `tsc` чистий, усі наявні тести зелені.
+## Acceptance criteria
+- [ ] A real Privat statement imports; re-importing the same file adds 0 new rows (R5).
+- [ ] Amounts are integer minor units, with no floats ([[Invariants]] #1); cross-check:
+      statement total = amount in the DB.
+- [ ] Dates are stored in UTC ([[Invariants]] #2).
+- [ ] The core (normalize, sync, entity) is unchanged — only a new provider (NR1).
+- [ ] Unit: parser (encoding, dates, comma decimals, negative amounts, stable hash).
+- [ ] Integration: import → DB against real Postgres.
+- [ ] `tsc` is clean, and all existing tests are green.

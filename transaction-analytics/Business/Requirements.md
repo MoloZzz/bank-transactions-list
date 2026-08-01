@@ -1,49 +1,49 @@
 ---
-summary: Функціональні R1-R13 і нефункціональні NR1-NR4 вимоги трекера.
+summary: Functional R1-R13 and non-functional NR1-NR4 tracker requirements.
 ---
 # Requirements
 
-Функціональні вимоги персонального трекера. Пріоритет — «цінність раніше»
-(див. [[Roadmap & Status]]).
+Functional requirements for the personal tracker. Priority — “value first” (see [[Roadmap & Status]]).
 
-## Збір транзакцій
-- **R1.** Тягнути транзакції по картках Monobank через personal API. → [[Monobank]]
-- **R2.** Тягнути крипто-поповнення з Binance CSV: P2P-ордери (з fiat+курсом) і
-  deposit-історію (on-chain, без fiat). → [[Crypto CSV]]
-- **R3.** (пізніше) Імпорт банківських CSV (Privat тощо). → [[Bank CSV]]
-- **R4.** Кожна транзакція нормалізується в єдину модель незалежно від джерела.
+## Transaction collection
+- **R1.** Pull transactions for Monobank cards through the personal API. → [[Monobank]]
+- **R2.** Pull crypto top-ups from Binance CSV: P2P orders (with fiat+rate) and
+  deposit history (on-chain, without fiat). → [[Crypto CSV]]
+- **R3.** (later) Import bank CSVs (Privat etc.). → [[Bank CSV]]
+- **R4.** Each transaction is normalized into one model regardless of source.
   → [[Data Model]], [[Providers]]
-- **R5.** Синк **ідемпотентний** — повторний запуск не створює дублів
+- **R5.** Sync is **idempotent** — repeated runs do not create duplicates
   (`UNIQUE(source, externalId)`). → [[Invariants]] #4
-- **R6.** Синк **інкрементальний** — щоденний запуск тягне лише нове (watermark =
-  `max(bookedAt)` по джерелу), не ганяючи всю історію. → [[Sync Engine]]
+- **R6.** Sync is **incremental** — daily runs pull only new data (watermark =
+  `max(bookedAt)` per source), instead of replaying the whole history. → [[Sync Engine]]
 
-## Рахунки/картки
-- **R7.** Кожна транзакція прив'язана до рахунку/картки (звідки вона). Видно
-  «картка ••1234 / UAH», можна групувати й фільтрувати. → [[Data Model]]
+## Accounts/cards
+- **R7.** Each transaction is tied to an account/card (where it came from). It is visible
+  as “card ••1234 / UAH”, and can be grouped and filtered. → [[Data Model]]
 
-## Гроші й валюти
-- **R8.** Суми зберігаються як **ціле в мінорних одиницях** (копійки/центи; крипта —
-  у своїх мінорних одиницях зі scale). Ніколи float. → [[Invariants]] #1
-- **R9.** Валюта суми = валюта **рахунку** (бо Monobank `amount` — у валюті рахунку).
-  Валюта/сума операції (крос-валюта) — у `metadata`. → [[Monobank]], [[Decision Log]]
-- **R10.** Час — у UTC; локальний час лише на показі/групуванні. → [[Invariants]] #2
+## Money and currencies
+- **R8.** Amounts are stored as **integers in minor units** (kopeks/cents; crypto —
+  in its own minor units with scale). Never float. → [[Invariants]] #1
+- **R9.** Amount currency = account currency (because Monobank `amount` is in the account
+  currency). Operation currency/amount (cross-currency) is in `metadata`.
+  → [[Monobank]], [[Decision Log]]
+- **R10.** Time is UTC; local time is only for display/grouping. → [[Invariants]] #2
 
-## Метчинг card ↔ crypto (ключова цінність)
-- **R11.** Після завантаження обох джерел — окремий шар зв'язує картковий гривневий
-  дебет із крипто-припливом P2P. Метч 1-до-1, з confidence, з ручним override.
+## Card ↔ crypto matching (key value)
+- **R11.** After both sources are loaded, a separate stage links a card debit in hryvnias
+  to a P2P crypto inflow. Match is 1-to-1, with confidence, and with manual override.
   → [[Card↔Crypto Matching]], [[Invariants]] #5
-- **R12.** Для крипто-депозитів без картки (обмінник) — оцінка fiat через курс НБУ на
-  дату (estimate, `rateSource=NBU`). → [[Card↔Crypto Matching]]
+- **R12.** For crypto deposits without a card (exchange) — estimate fiat via NBU rate on
+  the transaction date (estimate, `rateSource=NBU`). → [[Card↔Crypto Matching]]
 
-## Експорт
-- **R13.** Експорт у Google Sheets — простий дамп рядків, через подію
-  `transaction.created`, ізольовано від синку. → [[Events & Export]]
+## Export
+- **R13.** Export to Google Sheets is a simple row dump, via the `transaction.created`
+  event, isolated from sync. → [[Events & Export]]
 
-## Нефункціональні
-- **NR1.** Розширюваність: нове джерело = новий провайдер, ядро не чіпається.
-- **NR2.** Кожен крок покритий тестом (unit на normalize/метч, інтеграційний на
+## Non-functional
+- **NR1.** Extensibility: a new source = a new provider, core untouched.
+- **NR2.** Each step is covered by tests (unit for normalize/match, integration for
   provider+sync). → [[Roadmap & Status]]
-- **NR3.** Секрети (Monobank token, Google service-account) — лише через env/secrets,
-  ніколи в код чи БД у відкритому вигляді.
-- **NR4.** Поважати ліміти джерел (Monobank: 1 запит/60с, вікно ≤31 доба). → [[Monobank]]
+- **NR3.** Secrets (Monobank token, Google service-account) — only through env/secrets,
+  never in code or DB in plain text.
+- **NR4.** Respect source limits (Monobank: 1 request/60s, window ≤31 days). → [[Monobank]]

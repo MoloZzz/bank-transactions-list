@@ -1,21 +1,21 @@
-# RTK — компактний вивід bash-команд
+# RTK — compact bash-command output
 
-Повний довідник. У `CLAUDE.md` лишається тільки золоте правило —
-це файл читається за потреби, а не в кожному запиті.
+Full reference. In `CLAUDE.md`, only the golden rule remains —
+this file is read on demand, not kept in context for every request.
 
-## RTK — компактний вивід bash-команд (ПРИМУСОВО, наскільки дозволяє Cowork)
-Бінарник лежить у `tools/rtk` (Linux ELF, працює в sandbox Cowork; у git не комітиться —
-див. `.gitignore`). Cowork не підтримує PreToolUse hook (на відміну від Claude Code) —
-тобто це НЕ автоматичне перехоплення команд, а пряма вказівка, якій ти зобов'язаний
-слідувати вручну для КОЖНОЇ bash-команди, що підпадає під список нижче.
+## RTK — compact bash-command output (MANDATORY, as far as Cowork allows)
+The binary lives in `tools/rtk` (Linux ELF, works in the Cowork sandbox; it is not committed to git —
+see `.gitignore`). Cowork does not support a PreToolUse hook (unlike Claude Code) —
+so this is NOT automatic command interception, but a direct instruction you must follow manually
+for EVERY bash command that falls under the list below.
 
-**Правило: перш ніж виконати git/grep/find/npm run/ls/tsc/lint-команду в цьому репо —
-перевір, чи є для неї rtk-обгортка нижче, і якщо є, використай саме її, а не голу
-команду.** Якщо `tools/rtk` відсутній (свіжий sandbox), віднови його одноразово:
+**Rule: before running any git/grep/find/npm run/ls/tsc/lint command in this repo —
+check whether there is an rtk wrapper for it below, and if there is, use that wrapper instead of the raw
+command.** If `tools/rtk` is missing (fresh sandbox), restore it once:
 `cp tools/rtk-cli tools/rtk && chmod +x tools/rtk`.
 
-PATH у sandbox не персистить між bash-викликами, тому всюди нижче `rtk <command>`
-читай як `tools/rtk <command>` (шлях відносно кореня репо).
+PATH in the sandbox does not persist between bash calls, so everywhere below `rtk <command>`
+should be read as `tools/rtk <command>` (relative to the repo root).
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

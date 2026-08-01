@@ -1,37 +1,37 @@
 ---
-summary: Хаб бази знань: навігація по нотах — бізнес, архітектура, джерела, рішення, плани.
+summary: Knowledge base hub: navigation through notes — business, architecture, sources, decisions, and plans.
 ---
 # Financial Transactions Aggregator — Knowledge Base
 
-Персональний фінансовий трекер: збирає транзакції по картках і крипто-поповнення,
-вміє зв'язувати гривневий відтік по картці з крипто-припливом (P2P-купівлі),
-експортує в Google Sheets. Стек: **NestJS + TypeORM + PostgreSQL**.
+Personal finance tracker: collects card transactions and crypto deposits,
+can link a hryvnia card outflow to a crypto inflow (P2P purchases),
+and exports to Google Sheets. Stack: **NestJS + TypeORM + PostgreSQL**.
 
-> [!info] Статус
-> Єдине джерело правди про статус — [[Roadmap & Status]]. Тут статус не дублюється.
+> [!info] Status
+> The single source of truth for status is [[Roadmap & Status]]. Status is not duplicated here.
 
-## Бізнес
-- [[Vision & Goals]] — що це, для кого, навіщо, межі
-- [[Requirements]] — функціональні вимоги
-- [[Card↔Crypto Matching]] — головна доменна фішка (P2P-метчинг)
-- [[Glossary]] — терміни
+## Business
+- [[Vision & Goals]] — what it is, for whom, why, and boundaries
+- [[Requirements]] — functional requirements
+- [[Card↔Crypto Matching]] — the main domain feature (P2P matching)
+- [[Glossary]] — terminology
 
-## Архітектура
-- [[Architecture Overview]] — шари й потік даних (діаграма)
-- [[Invariants]] — непорушні правила
-- [[Data Model]] — сутності й схема (ERD)
-- [[Sync Engine]] — як тягнеться і зберігається
-- [[Providers]] — контракт джерела
-- [[Events & Export]] — подія + Google Sheets
+## Architecture
+- [[Architecture Overview]] — layers and data flow (diagram)
+- [[Invariants]] — non-negotiable rules
+- [[Data Model]] — entities and schema (ERD)
+- [[Sync Engine]] — how data is fetched and stored
+- [[Providers]] — source contract
+- [[Events & Export]] — event + Google Sheets
 
-## Джерела даних
-- [[Monobank]] — API, ліміти, підводні камені
+## Data sources
+- [[Monobank]] — API, limits, and pitfalls
 - [[Crypto CSV]] — Binance P2P + deposit
-- [[Bank CSV]] — Privat тощо
+- [[Bank CSV]] — Privat and others
 
-## Планування
-- [[Analytics & Control — Backlog]] — беклог аналітики й контролю, плани `Plans/`
+## Planning
+- [[Analytics & Control — Backlog]] — analytics and control backlog, plans in `Plans/`
 
-## Процес і рішення
-- [[Roadmap & Status]] — порядок і що вже готово
-- [[Decision Log]] — ключові рішення й чому
+## Process and decisions
+- [[Roadmap & Status]] — sequence and what is already complete
+- [[Decision Log]] — key decisions and why

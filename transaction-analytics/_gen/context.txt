@@ -6,19 +6,17 @@ NestJS + TypeORM + Postgres; node24 CJS/ES2023; code=backend/ vault=transaction-
 single-user app: no userId, no roles, no multitenancy
 
 ## INVARIANTS (canon Architecture/Invariants.md, verbatim headings)
-1. Гроші — ціле в мінорних одиницях, ніколи float
-2. Дати — UTC у БД
-3. Ядро не знає про джерело
-4. Дедуп і мультитенантність
-5. Метчинг — окремий шар post-processing
-6. Сайд-ефекти — тільки через подію
-7. Секрети — лише env/secrets
+1. Money is always integers in minor units, never float
+2. Dates are UTC in the DB
+3. The core does not know about the source
+4. Dedup and multi-tenancy
+5. Matching is a separate post-processing stage
+6. Side effects — only through events
+7. Secrets — env/secrets only
 
 ## STATUS (canon Roadmap & Status.md)
-done  1. БД + entity Transaction + міграція | 2. normalize layer + NormalizedTransaction | 3. Monobank provider + sync | 4. Crypto CSV provider | 5. Метчинг card↔crypto + CryptoPurchase
-next  6. Estimate для unmatched (курс НБУ)
-todo  7. Bank CSV
-extra watermark | Accounts | Єдиний `DATABASE_URL`. | Фікс крос-валютних сум (валюта = валюта рахунку).
+done  1. DB + entity Transaction + migration | 2. normalize layer + NormalizedTransaction | 3. Monobank provider + sync | 4. Crypto CSV provider | 5. Card↔crypto matching + CryptoPurchase | watermark | Accounts | Single `DATABASE_URL`. | Fix for cross-currency amounts (currency = account currency).
+todo  6. Estimate for unmatched (NBU rate) | 7. Bank CSV
 
 ## CODE (derived from backend/src)
 entities    Transaction->transactions Account->accounts CryptoPurchase->crypto_purchases
@@ -35,8 +33,8 @@ optional BINANCE_DEPOSIT_CSV_PATH BINANCE_P2P_CSV_PATH GOOGLE_SERVICE_ACCOUNT_JS
 build | test | test:int | lint(WARNING: --fix, mutates) | migration:run | sync | match | db:up
 
 ## DOD (canon Roadmap & Status.md#Definition of Done)
-Код працює + покритий тестом (unit на normalize/метч, інтеграційний на provider+sync) +
-не порушено жоден [[Invariants|інваріант]] + можна запустити ізольовано й побачити результат.
+Code works + is covered by tests (unit tests for normalize/matching, integration tests for provider+sync) +
+no [[Invariants|invariant]] is violated + it can be run in isolation and its result observed.
 
 ## RETRIEVAL
 L2  node tools/vault/v.mjs find <query>    -> ranked path#N :: heading

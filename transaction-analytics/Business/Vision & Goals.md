@@ -1,42 +1,42 @@
 ---
-summary: Що це, для кого, навіщо, принципи і явні межі out of scope.
+summary: What this is, for whom, why, principles and explicit out-of-scope.
 ---
 # Vision & Goals
 
-## Що це
-Персональний фінансовий трекер **для однієї людини** (не платформа, не SaaS).
-Якісний особистий інструмент, відкритий до додавання аналітики згодом — але **без
-передчасного роздування** у «ультра-платформу».
+## What this is
+A personal financial tracker for one person (not a platform, not SaaS).
+A high-quality personal tool, open to adding analytics later — but without premature
+“ultra-platform” expansion.
 
-## Навіщо (проблема)
-Гроші живуть у різних місцях — картки (Monobank, інші банки) і крипта (Binance P2P,
-депозити on-chain). Немає єдиної картини:
-- не видно всіх транзакцій в одному місці;
-- не зрозуміло, **скільки реально коштувала крипта в гривні**, коли купуєш через P2P
-  (гривня пішла з картки → прийшла крипта);
-- ручний облік у таблицях марудний і губиться.
+## Why (the problem)
+Money lives in different places — cards (Monobank, other banks) and crypto (Binance P2P,
+on-chain deposits). There is no single picture:
+- you cannot see all transactions in one place;
+- it is not clear how much crypto actually cost in hryvnias when you buy through P2P
+  (hryvnia left the card → crypto arrived);
+- manual spreadsheet bookkeeping is tedious and breaks down.
 
-## Мета
-1. **Зібрати** транзакції по картках і крипто-поповнення в одну нормалізовану базу.
-2. **Зв'язати** гривневий відтік по картці з крипто-припливом (P2P-купівля) — щоб бачити
-   реальну собівартість крипти у фіаті. Див. [[Card↔Crypto Matching]].
-3. **Показати** — простий дамп у Google Sheets; аналітика можливо згодом.
+## Goals
+1. Collect card transactions and crypto top-ups into one normalized database.
+2. Link the card withdrawal to the crypto inflow (P2P purchase) so we can see the true
+   fiat cost of crypto. See [[Card↔Crypto Matching]].
+3. Show it — a simple dump into Google Sheets; analytics may come later.
 
-## Для кого
-Один користувач (власник). Тому: **немає мультитенантності**, немає ролей, немає userId.
-Це свідоме спрощення — див. [[Decision Log]] і [[Invariants]] #4.
+## For whom
+One user (the owner). Therefore: no multi-tenancy, no roles, no userId.
+This is a deliberate simplification — see [[Decision Log]] and [[Invariants]] #4.
 
-## Принципи
-- **Простота за замовчуванням.** Складність додається лише коли дає реальну цінність
-  *зараз*, а не «на майбутнє». Скепсис до зайвих абстракцій, інтеграцій, шарів.
-- **Розширюваність важливіша за повноту.** Нове джерело даних має додаватись *збоку*,
-  без переробки ядра — головний архітектурний орієнтир (див. [[Providers]], [[Invariants]] #3).
-- **Цінність — раніше.** Спершу побачити свої транзакції, потім ускладнювати.
-- **Гроші — точно.** Ніколи float; цілі мінорні одиниці (див. [[Invariants]] #1).
+## Principles
+- Simplicity by default. Add complexity only when it creates real value now, not
+  “someday”. Skeptical of unnecessary abstractions, integrations, and layers.
+- Extensibility matters more than completeness. A new data source must be added outside,
+  without reworking the core — the main architectural compass (see [[Providers]], [[Invariants]] #3).
+- Value first. See your own transactions first, then make it more sophisticated.
+- Money precisely. Never float; only integer minor units (see [[Invariants]] #1).
 
-## Явні межі (out of scope зараз)
-- Не бюджетування/прогнози, не push-сповіщення, не веб-UI (поки).
-- Не інвестиційний PnL із lot-tracking (FIFO) — але схему **не ламаємо** під це:
-  кожен крипто-рядок = одна нога руху активу, зв'язок ніг трейду — через metadata
-  (`tradeRef`), щоб майбутній FIFO був можливий. Див. [[Data Model]].
-- Не багатокористувацькість.
+## Explicit boundaries (out of scope for now)
+- No budgeting/forecasts, no push notifications, no web UI (yet).
+- No investment PnL with lot-tracking (FIFO) — but the scheme is not broken for this:
+  each crypto row = one asset movement leg, the leg link is through metadata (`tradeRef`),
+  so future FIFO remains possible. See [[Data Model]].
+- No multi-user support.

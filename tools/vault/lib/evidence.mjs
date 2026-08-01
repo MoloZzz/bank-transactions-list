@@ -22,7 +22,7 @@
  */
 import { createRequire } from 'node:module';
 import * as path from 'node:path';
-import { readTextOrNull, writeText, toPosix, VAULT_DIR, BACKEND_DIR } from './fs.mjs';
+import { readTextOrNull, writeText, toPosix, shortDigest, VAULT_DIR, BACKEND_DIR } from './fs.mjs';
 
 /**
  * Local twin of v.mjs's UsageError. It cannot import that one: v.mjs is the
@@ -33,6 +33,13 @@ export class RegistryError extends Error {}
 
 const REGISTRY = `${VAULT_DIR}/_metrics.tsv`;
 const OUT = 'tools/vault/.evidence.tsv';
+
+/**
+ * After this many days a measurement stops being injected as fact and starts
+ * asking to be re-run. Time is a proxy for the thing that actually matters —
+ * transactions arriving since the run — which no cached file can observe.
+ */
+const STALE_DAYS = 14;
 
 /** Columns a metric may return. The whitelist IS the privacy guard — see _metrics.tsv. */
 const ALLOWED_COLUMNS = new Set(['value', 'n']);
@@ -91,6 +98,18 @@ export function readRegistry(root) {
 
   if (!metrics.length) throw new RegistryError(`${REGISTRY}: no metrics defined`);
   return metrics;
+}
+
+/**
+ * Identity of the QUESTIONS a run answered, stamped into the output so a cached
+ * measurement can tell whether the registry has moved underneath it.
+ *
+ * Computed over the PARSED metrics, never the file text: `_metrics.tsv` is over
+ * half prose, and invalidating a good measurement because someone reworded a
+ * comment would train everyone to ignore the staleness warning.
+ */
+function registryDigest(metrics) {
+  return shortDigest(metrics.map((m) => `${m.key}\t${m.trigger ? m.trigger.text : '-'}\t${m.sql}`).join('\n'));
 }
 
 /**
@@ -294,6 +313,7 @@ export async function evidence(root, flags) {
 
   // Tab-separated so the Interpret/Verify stages can diff two runs without a parser.
   const tsv = [
+    `# registry\t${registryDigest(metrics)}`,
     '# key\tvalue\tn\ttrigger\tfires\tplan\tmeasured_at',
     ...rows.map((r) =>
       [
@@ -311,4 +331,87 @@ export async function evidence(root, flags) {
   if (!flags.json) process.stdout.write(`\nwrote ${toPosix(OUT)}\n`);
 
   return rows.every((r) => r.error) ? 1 : 0;
+}
+
+const RUN = 'node tools/vault/v.mjs evidence';
+
+/** Read back what evidence() wrote. Lives beside the writer so the columns cannot drift apart. */
+function readOut(root) {
+  const text = readTextOrNull(path.resolve(root, OUT));
+  if (text === null) return null;
+
+  let stamped = null;
+  const rows = [];
+  for (const line of text.split('\n')) {
+    if (!line.trim()) continue;
+    if (line.startsWith('# registry')) {
+      stamped = line.split('\t')[1]?.trim() || null;
+      continue;
+    }
+    if (line.startsWith('#')) continue;
+    const [key, value, n, trigger, fires, plan, measuredAt] = line.split('\t');
+    // A short row is a truncated write, not a crash: drop it and report on the rest.
+    if (!key || !plan || !measuredAt) continue;
+    rows.push({ key, value, n, trigger, fires, plan, measuredAt });
+  }
+  return { stamped, rows };
+}
+
+function digestLines(root) {
+  const out = readOut(root);
+  if (!out) return `EVIDENCE: never measured. Before choosing WHAT to build, run: ${RUN}`;
+  if (!out.rows.length) return `EVIDENCE: measurement file has no readable rows — re-run: ${RUN}`;
+
+  const measuredAt = out.rows[0].measuredAt;
+  const day = measuredAt.slice(0, 10);
+  const ageDays = Math.floor((Date.now() - Date.parse(measuredAt)) / 86_400_000);
+  if (!Number.isFinite(ageDays)) return `EVIDENCE: measurement has no usable timestamp — re-run: ${RUN}`;
+
+  // Registry drift outranks age: a run against different questions is not merely
+  // old, it is answering something nobody asked.
+  let current = null;
+  try {
+    current = registryDigest(readRegistry(root));
+  } catch {
+    /* a malformed registry is `check`'s problem to report, not L1's */
+  }
+  if (current && out.stamped && current !== out.stamped)
+    return `EVIDENCE: measured ${day}, but _metrics.tsv changed since — the cached run answers different questions. Re-run: ${RUN}`;
+  if (ageDays > STALE_DAYS)
+    return `EVIDENCE: measured ${day} (${ageDays}d ago), stale past ${STALE_DAYS}d — re-run before relying on it: ${RUN}`;
+
+  const firing = out.rows.filter((r) => r.fires === 'yes');
+  const errored = out.rows.filter((r) => r.fires === 'err');
+  const head = `EVIDENCE (measured ${day}, ${ageDays}d ago)`;
+  const L = [];
+  if (firing.length) {
+    const w = Math.max(...firing.map((r) => r.plan.length));
+    L.push(`${head} — ${firing.length} trigger${firing.length > 1 ? 's' : ''} firing:`);
+    for (const r of firing) L.push(`  ${pad(r.plan, w)} <- ${r.key} ${r.value} ${r.trigger} (n=${r.n})`);
+  } else {
+    L.push(`${head} — no trigger firing; the data argues for no backlog item right now.`);
+  }
+  if (errored.length) L.push(`  unmeasured: ${errored.map((r) => r.key).join(', ')}`);
+  L.push('Consult when choosing WHAT to build; ignore while implementing an agreed task.');
+  L.push('Directional only (one user, small n); a plan with no metric stays a judgement call.');
+  return L.join('\n');
+}
+
+/**
+ * The L1 block, injected at session start by hook.mjs.
+ *
+ * Reads ONLY the cached file. A hook that opened a database connection would
+ * make every session pay for Docker being up, and would break the rule this
+ * module opens with — `vault evidence` stays the only thing that measures.
+ *
+ * CONTRACT: never throws and never returns a promise. hook.mjs does catch, but a
+ * throw here would take the entire L1 pack down with it — the retrieval layer
+ * would silently regress to nothing because a product metric could not be read.
+ */
+export function digest(root) {
+  try {
+    return digestLines(root);
+  } catch {
+    return `EVIDENCE: measurement unreadable — re-run: ${RUN}`;
+  }
 }

@@ -1,5 +1,5 @@
 ---
-summary: Подія transaction.created і Google Sheets subscriber; батч-флаш замість per-event запису.
+summary: transaction.created event and Google Sheets subscriber; batched flush instead of per-event write.
 code:
   - src/events/**
   - src/subscribers/**
@@ -7,33 +7,34 @@ rev: bd171cbdae89
 ---
 # Events & Export
 
-Сайд-ефекти — лише через подію `transaction.created` (→ [[Invariants]] #6). Синк не знає
-про експорт; експорт не знає про синк/провайдери.
+Side effects only through the `transaction.created` event (→ [[Invariants]] #6). The sync
+knows nothing about export; export knows nothing about sync/providers.
 
-## Подія
-- Константа `TRANSACTION_CREATED = 'transaction.created'`, інтерфейс `EventBus` (у Nest
-  його закриває `EventEmitter2`).
-- `SyncService` емітить подію **лише на реально створені** рядки (не на дедуп-хіти).
-- Поки що **один** subscriber — не плодимо подієвість заздалегідь (канон: [[Invariants]] #6).
+## Event
+- Constant `TRANSACTION_CREATED = 'transaction.created'`, interface `EventBus` (in Nest
+  it is wrapped by `EventEmitter2`).
+- `SyncService` emits the event **only for actually created** rows (not for dedupe hits).
+- For now there is **one** subscriber — we do not multiply subsystems unnecessarily (canon: [[Invariants]] #6).
 
 ## Google Sheets subscriber
-- Слухає `transaction.created`, **буферизує** рядки і робить **один батч-append** на
-  `flush()`. Повний бекфіл = тисячі подій, тож per-event запис у Sheets був би повільний
-  і впирався б у ліміти — тому буфер + один флаш наприкінці прогону.
-- `transactionToSheetRow` — display-шар: `formatMinor` дає людський amount із мінорних
-  одиниць (крипта без втрат), дата — UTC ISO, колонка рахунку (maskedPan/або id).
-- `SheetsClient` — вузький інтерфейс (`appendRows`). Живий `GoogleSheetsClient` через
-  `google-auth-library` (service-account JWT) + Sheets REST; якщо кредів нема —
-  `NullSheetsClient` (синк усе одно пише в БД).
+- Listens to `transaction.created`, **buffers** rows and makes **one batch append** on
+  `flush()`. A full backfill means thousands of events, so per-event writes to Sheets
+  would be slow and rate-limited — hence the buffer + one flush at the end of the run.
+- `transactionToSheetRow` — display layer: `formatMinor` produces a human amount from
+  minor units (crypto without loss), the date is UTC ISO, the account column is
+  (maskedPan/or id).
+- `SheetsClient` — a thin interface (`appendRows`). Live `GoogleSheetsClient` via
+  `google-auth-library` (service-account JWT) + Sheets REST; if there are no creds —
+  `NullSheetsClient` (the sync still writes to the DB).
 
-## Конфіг (env)
+## Config (env)
 ```
-GOOGLE_SERVICE_ACCOUNT_JSON=   # inline JSON або шлях до файлу
+GOOGLE_SERVICE_ACCOUNT_JSON=   # inline JSON or file path
 SHEETS_SPREADSHEET_ID=
 SHEETS_TAB=Sheet1
 ```
-Без цих змінних експорт вимкнено (Null-клієнт), БД наповнюється як звичайно.
+Without these variables export is disabled (Null client), and the DB is filled as usual.
 
-## Майбутнє (за тією ж подією)
-Аналітика, AI-категоризація (джерело — `mcc` у `metadata`) — додаються як нові
-subscriber'и, без змін у синку/провайдерах.
+## Future (same event)
+Analytics, AI categorization (source is `mcc` in `metadata`) — added as new
+subscribers, without changes to sync/provider.

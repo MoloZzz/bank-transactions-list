@@ -6,41 +6,41 @@
       "path": "transaction-analytics/00 — Index.md",
       "name": "00 — Index",
       "type": "index",
-      "summary": "Хаб бази знань: навігація по нотах — бізнес, архітектура, джерела, рішення, плани.",
+      "summary": "Knowledge base hub: navigation through notes — business, architecture, sources, decisions, and plans.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Бізнес",
+          "text": "Business",
           "line": 13,
           "endLine": 18
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Архітектура",
+          "text": "Architecture",
           "line": 19,
           "endLine": 26
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Джерела даних",
+          "text": "Data sources",
           "line": 27,
           "endLine": 31
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Планування",
+          "text": "Planning",
           "line": 32,
           "endLine": 34
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Процес і рішення",
+          "text": "Process and decisions",
           "line": 35,
           "endLine": 38
         }
@@ -51,62 +51,62 @@
       "path": "transaction-analytics/Analytics & Control — Backlog.md",
       "name": "Analytics & Control — Backlog",
       "type": "index",
-      "summary": "Беклог перетворення трекера на систему фінансового контролю: Plan 00-06 і порядок виконання.",
+      "summary": null,
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "0. Повнота даних",
+          "text": "0. Data completeness",
           "line": 15,
           "endLine": 18
         },
         {
           "n": 2,
           "level": 2,
-          "text": "1. Фундамент (без нього аналітика неможлива)",
+          "text": "1. Foundation (analytics is impossible without it)",
           "line": 19,
           "endLine": 29
         },
         {
           "n": 3,
           "level": 2,
-          "text": "2. Аналітика",
+          "text": "2. Analytics",
           "line": 30,
           "endLine": 37
         },
         {
           "n": 4,
           "level": 2,
-          "text": "3. Контроль",
+          "text": "3. Control",
           "line": 38,
           "endLine": 43
         },
         {
           "n": 5,
           "level": 2,
-          "text": "4. Попередження (rule-based)",
+          "text": "4. Alerts (rule-based)",
           "line": 44,
           "endLine": 49
         },
         {
           "n": 6,
           "level": 2,
-          "text": "5. Поради (insights)",
+          "text": "5. Insights",
           "line": 50,
           "endLine": 54
         },
         {
           "n": 7,
           "level": 2,
-          "text": "Порядок виконання",
+          "text": "Execution order",
           "line": 55,
           "endLine": 65
         },
         {
           "n": 8,
           "level": 2,
-          "text": "Спільні правила (успадковані)",
+          "text": "Shared rules (inherited)",
           "line": 66,
           "endLine": 70
         }
@@ -117,29 +117,29 @@
       "path": "transaction-analytics/Architecture/Architecture Overview.md",
       "name": "Architecture Overview",
       "type": "architecture",
-      "summary": "Шари й потік даних: source-agnostic ядро, провайдери збоку, сайд-ефекти через подію.",
+      "summary": "Data flow and data stream: source-agnostic core, providers outside, side effects through events.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Потік даних",
-          "line": 9,
-          "endLine": 40
+          "text": "Data flow",
+          "line": 8,
+          "endLine": 39
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Шари",
-          "line": 41,
-          "endLine": 53
+          "text": "Layers",
+          "line": 40,
+          "endLine": 47
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Ключові технічні факти",
-          "line": 54,
-          "endLine": 58
+          "text": "Key technical facts",
+          "line": 48,
+          "endLine": 52
         }
       ]
     },
@@ -148,7 +148,7 @@
       "path": "transaction-analytics/Architecture/Data Model.md",
       "name": "Data Model",
       "type": "architecture",
-      "summary": "Сутності, поля, типи, індекси, ERD і міграції. Гроші — numeric(38,0) на BigInt.",
+      "summary": "Entities, fields, types, indexes, ERD and migrations. Money — numeric(38,0) to BigInt.",
       "rev": "a292e63eff06",
       "headings": [
         {
@@ -175,21 +175,21 @@
         {
           "n": 4,
           "level": 2,
-          "text": "`crypto_purchases` (крок 5)",
+          "text": "`crypto_purchases` (step 5)",
           "line": 86,
           "endLine": 107
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Міграції",
+          "text": "Migrations",
           "line": 108,
           "endLine": 114
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Плановані сутності",
+          "text": "Planned entities",
           "line": 115,
           "endLine": 118
         }
@@ -200,13 +200,13 @@
       "path": "transaction-analytics/Architecture/Events & Export.md",
       "name": "Events & Export",
       "type": "architecture",
-      "summary": "Подія transaction.created і Google Sheets subscriber; батч-флаш замість per-event запису.",
+      "summary": "transaction.created event and Google Sheets subscriber; batched flush instead of per-event write.",
       "rev": "bd171cbdae89",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Подія",
+          "text": "Event",
           "line": 13,
           "endLine": 18
         },
@@ -215,21 +215,21 @@
           "level": 2,
           "text": "Google Sheets subscriber",
           "line": 19,
-          "endLine": 28
+          "endLine": 29
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Конфіг (env)",
-          "line": 29,
-          "endLine": 36
+          "text": "Config (env)",
+          "line": 30,
+          "endLine": 37
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Майбутнє (за тією ж подією)",
-          "line": 37,
-          "endLine": 40
+          "text": "Future (same event)",
+          "line": 38,
+          "endLine": 41
         }
       ]
     },
@@ -238,64 +238,64 @@
       "path": "transaction-analytics/Architecture/Invariants.md",
       "name": "Invariants",
       "type": "architecture",
-      "summary": "Сім непорушних правил проєкту — конституція. Порушення означає стоп і переробку.",
+      "summary": "Seven unbreakable rules of the project — the constitution. A violation means stop and rework.",
       "rev": "9b00294467a9",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "1. Гроші — ціле в мінорних одиницях, ніколи float",
+          "text": "1. Money is always integers in minor units, never float",
           "line": 11,
           "endLine": 16
         },
         {
           "n": 2,
           "level": 2,
-          "text": "2. Дати — UTC у БД",
+          "text": "2. Dates are UTC in the DB",
           "line": 17,
           "endLine": 20
         },
         {
           "n": 3,
           "level": 2,
-          "text": "3. Ядро не знає про джерело",
+          "text": "3. The core does not know about the source",
           "line": 21,
           "endLine": 24
         },
         {
           "n": 4,
           "level": 2,
-          "text": "4. Дедуп і мультитенантність",
+          "text": "4. Dedup and multi-tenancy",
           "line": 25,
           "endLine": 29
         },
         {
           "n": 5,
           "level": 2,
-          "text": "5. Метчинг — окремий шар post-processing",
+          "text": "5. Matching is a separate post-processing stage",
           "line": 30,
-          "endLine": 33
+          "endLine": 34
         },
         {
           "n": 6,
           "level": 2,
-          "text": "6. Сайд-ефекти — тільки через подію",
-          "line": 34,
-          "endLine": 38
+          "text": "6. Side effects — only through events",
+          "line": 35,
+          "endLine": 39
         },
         {
           "n": 7,
           "level": 2,
-          "text": "7. Секрети — лише env/secrets",
-          "line": 39,
-          "endLine": 50
+          "text": "7. Secrets — env/secrets only",
+          "line": 40,
+          "endLine": 51
         },
         {
           "n": 8,
           "level": 3,
-          "text": "Похідні наслідки",
-          "line": 44,
-          "endLine": 50
+          "text": "Consequences",
+          "line": 45,
+          "endLine": 51
         }
       ]
     },
@@ -304,43 +304,43 @@
       "path": "transaction-analytics/Architecture/Providers.md",
       "name": "Providers",
       "type": "architecture",
-      "summary": "Контракт TransactionProvider: fetch плюс мапінг у NormalizedTransaction, нуль бізнес-логіки.",
+      "summary": "TransactionProvider contract: fetch plus map into NormalizedTransaction, zero business logic.",
       "rev": "e9bf8bcc3be6",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Контракт",
+          "text": "Contract",
           "line": 13,
-          "endLine": 24
+          "endLine": 25
         },
         {
           "n": 2,
           "level": 2,
-          "text": "NormalizedTransaction (канонічна форма)",
-          "line": 25,
-          "endLine": 29
+          "text": "NormalizedTransaction (canonical form)",
+          "line": 26,
+          "endLine": 30
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Спільні хелпери (`src/core/normalize`)",
-          "line": 30,
-          "endLine": 34
+          "text": "Shared helpers (`src/core/normalize`)",
+          "line": 31,
+          "endLine": 35
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Реалізації",
-          "line": 35,
-          "endLine": 40
+          "text": "Implementations",
+          "line": 36,
+          "endLine": 41
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Реєстрація",
-          "line": 41,
-          "endLine": 44
+          "text": "Registration",
+          "line": 42,
+          "endLine": 45
         }
       ]
     },
@@ -349,27 +349,27 @@
       "path": "transaction-analytics/Architecture/Sync Engine.md",
       "name": "Sync Engine",
       "type": "architecture",
-      "summary": "SyncService: віконна пагінація, дедуп по UNIQUE source-externalId, watermark-інкремент.",
+      "summary": "SyncService: incremental run, dedupe by UNIQUE source-externalId, watermark increment.",
       "rev": "e4e1c7a4f382",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Алгоритм (на кожен провайдер)",
+          "text": "Algorithm (per provider)",
           "line": 13,
           "endLine": 22
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Ідемпотентність",
+          "text": "Idempotency",
           "line": 23,
           "endLine": 26
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Інкрементальність (watermark)",
+          "text": "Incrementality (watermark)",
           "line": 27,
           "endLine": 35
         },
@@ -383,7 +383,7 @@
         {
           "n": 5,
           "level": 2,
-          "text": "Запуск локально",
+          "text": "Local run",
           "line": 40,
           "endLine": 47
         }
@@ -394,57 +394,57 @@
       "path": "transaction-analytics/Business/Card↔Crypto Matching.md",
       "name": "Card↔Crypto Matching",
       "type": "business",
-      "summary": "Головна доменна цінність: гривнева собівартість крипти через звязок картковий дебет з P2P-припливом.",
+      "summary": "Main domain value: gross UAH cost of crypto through the link between card debit and P2P inflow.",
       "rev": "5308f431b2bf",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Два сценарії",
-          "line": 17,
-          "endLine": 32
+          "text": "Two scenarios",
+          "line": 14,
+          "endLine": 29
         },
         {
           "n": 2,
           "level": 3,
-          "text": "1. P2P-купівля (є метч card → crypto) — крок 5",
-          "line": 19,
-          "endLine": 26
+          "text": "1. P2P purchase (there is a card → crypto match) — step 5",
+          "line": 16,
+          "endLine": 23
         },
         {
           "n": 3,
           "level": 3,
-          "text": "2. Обмінник / депозит без картки (no match) — крок 6",
-          "line": 27,
-          "endLine": 32
+          "text": "2. Exchange / deposit without card (no match) — step 6",
+          "line": 24,
+          "endLine": 29
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Що зберігаємо — `CryptoPurchase`",
-          "line": 33,
-          "endLine": 45
+          "text": "What we store — `CryptoPurchase`",
+          "line": 30,
+          "endLine": 42
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Правила якості метчу",
-          "line": 46,
-          "endLine": 50
+          "text": "Match quality rules",
+          "line": 43,
+          "endLine": 47
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Звідки беруться дані для метчу",
-          "line": 51,
-          "endLine": 55
+          "text": "Where matching data comes from",
+          "line": 48,
+          "endLine": 52
         },
         {
           "n": 7,
           "level": 2,
-          "text": "Статус",
-          "line": 56,
-          "endLine": 61
+          "text": "Status",
+          "line": 53,
+          "endLine": 58
         }
       ]
     },
@@ -453,7 +453,7 @@
       "path": "transaction-analytics/Business/Glossary.md",
       "name": "Glossary",
       "type": "business",
-      "summary": "Терміни: Transaction, Account, CryptoPurchase, provider, normalize, мінорні одиниці, scale.",
+      "summary": "Terms: Transaction, Account, CryptoPurchase, provider, normalize, minor units, scale.",
       "rev": null,
       "headings": []
     },
@@ -462,48 +462,48 @@
       "path": "transaction-analytics/Business/Requirements.md",
       "name": "Requirements",
       "type": "business",
-      "summary": "Функціональні R1-R13 і нефункціональні NR1-NR4 вимоги трекера.",
+      "summary": "Functional R1-R13 and non-functional NR1-NR4 tracker requirements.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Збір транзакцій",
-          "line": 9,
-          "endLine": 20
+          "text": "Transaction collection",
+          "line": 8,
+          "endLine": 19
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Рахунки/картки",
-          "line": 21,
-          "endLine": 24
+          "text": "Accounts/cards",
+          "line": 20,
+          "endLine": 23
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Гроші й валюти",
-          "line": 25,
+          "text": "Money and currencies",
+          "line": 24,
           "endLine": 31
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Метчинг card ↔ crypto (ключова цінність)",
+          "text": "Card ↔ crypto matching (key value)",
           "line": 32,
           "endLine": 38
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Експорт",
+          "text": "Export",
           "line": 39,
           "endLine": 42
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Нефункціональні",
+          "text": "Non-functional",
           "line": 43,
           "endLine": 50
         }
@@ -514,48 +514,48 @@
       "path": "transaction-analytics/Business/Vision & Goals.md",
       "name": "Vision & Goals",
       "type": "business",
-      "summary": "Що це, для кого, навіщо, принципи і явні межі out of scope.",
+      "summary": "What this is, for whom, why, principles and explicit out-of-scope.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Що це",
+          "text": "What this is",
           "line": 6,
           "endLine": 10
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Навіщо (проблема)",
+          "text": "Why (the problem)",
           "line": 11,
           "endLine": 18
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Мета",
+          "text": "Goals",
           "line": 19,
           "endLine": 24
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Для кого",
+          "text": "For whom",
           "line": 25,
           "endLine": 28
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Принципи",
+          "text": "Principles",
           "line": 29,
           "endLine": 36
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Явні межі (out of scope зараз)",
+          "text": "Explicit boundaries (out of scope for now)",
           "line": 37,
           "endLine": 43
         }
@@ -566,43 +566,43 @@
       "path": "transaction-analytics/Decisions/Decision Log.md",
       "name": "Decision Log",
       "type": "decision",
-      "summary": "Ключові архітектурні рішення і причини у форматі рішення, чому, наслідок.",
+      "summary": "Key architectural decisions and why, in decision format: decision, reason, consequence.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Архітектура й модель",
+          "text": "Architecture and model",
           "line": 8,
           "endLine": 25
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Джерела / синк",
+          "text": "Sources / sync",
           "line": 26,
-          "endLine": 61
+          "endLine": 66
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Метчинг card↔crypto (крок 5)",
-          "line": 62,
-          "endLine": 88
+          "text": "Card↔crypto matching (step 5)",
+          "line": 67,
+          "endLine": 92
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Інфраструктура",
-          "line": 89,
-          "endLine": 98
+          "text": "Infrastructure",
+          "line": 93,
+          "endLine": 102
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Процес / база знань",
-          "line": 99,
-          "endLine": 124
+          "text": "Process / knowledge base",
+          "line": 103,
+          "endLine": 184
         }
       ]
     },
@@ -611,13 +611,13 @@
       "path": "transaction-analytics/Plans/Plan 00 — Bank CSV.md",
       "name": "Plan 00 — Bank CSV",
       "type": "plan",
-      "summary": "Повнота карткових даних: імпорт виписок інших банків як новий провайдер, без змін у ядрі.",
+      "summary": "Complete card data: import statements from other banks as a new provider, without core changes.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 9
         },
@@ -631,31 +631,31 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 14,
           "endLine": 23
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 24,
           "endLine": 33
         }
       ]
     },
     {
-      "rel": "Plans/Plan 01 — Категоризація.md",
-      "path": "transaction-analytics/Plans/Plan 01 — Категоризація.md",
-      "name": "Plan 01 — Категоризація",
+      "rel": "Plans/Plan 01 — Categorization.md",
+      "path": "transaction-analytics/Plans/Plan 01 — Categorization.md",
+      "name": "Plan 01 — Categorization",
       "type": "plan",
-      "summary": "Категорія і нормалізований мерчант на кожну транзакцію — фундамент аналітики, бюджетів, алертів.",
+      "summary": "A category and normalized merchant for every transaction — the foundation for analytics, budgets, and alerts.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 9
         },
@@ -669,38 +669,38 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Модель даних",
+          "text": "Data model",
           "line": 15,
           "endLine": 21
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 22,
           "endLine": 30
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 31,
           "endLine": 39
         }
       ]
     },
     {
-      "rel": "Plans/Plan 02 — Гігієна даних.md",
-      "path": "transaction-analytics/Plans/Plan 02 — Гігієна даних.md",
-      "name": "Plan 02 — Гігієна даних",
+      "rel": "Plans/Plan 02 — Data Hygiene.md",
+      "path": "transaction-analytics/Plans/Plan 02 — Data Hygiene.md",
+      "name": "Plan 02 — Data Hygiene",
       "type": "plan",
-      "summary": "Перекази, курси НБУ, підписки: власні перекази не витрати, все зводиться до UAH.",
+      "summary": "Transfers, NBU rates, subscriptions: own transfers are not expenses, and everything is converted to UAH.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 9
         },
@@ -714,38 +714,38 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Модель даних",
+          "text": "Data model",
           "line": 14,
           "endLine": 19
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 20,
           "endLine": 29
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 30,
           "endLine": 38
         }
       ]
     },
     {
-      "rel": "Plans/Plan 03 — Агрегації.md",
-      "path": "transaction-analytics/Plans/Plan 03 — Агрегації.md",
-      "name": "Plan 03 — Агрегації",
+      "rel": "Plans/Plan 03 — Aggregations.md",
+      "path": "transaction-analytics/Plans/Plan 03 — Aggregations.md",
+      "name": "Plan 03 — Aggregations",
       "type": "plan",
-      "summary": "Єдине джерело обчислених показників для звітів, бюджетів, алертів та insights.",
+      "summary": "Single source of computed metrics for reports, budgets, alerts, and insights.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 8
         },
@@ -759,38 +759,38 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Показники",
+          "text": "Metrics",
           "line": 13,
           "endLine": 20
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 21,
           "endLine": 28
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 29,
           "endLine": 36
         }
       ]
     },
     {
-      "rel": "Plans/Plan 04 — Бюджети й цілі.md",
-      "path": "transaction-analytics/Plans/Plan 04 — Бюджети й цілі.md",
-      "name": "Plan 04 — Бюджети й цілі",
+      "rel": "Plans/Plan 04 — Budgets & Goals.md",
+      "path": "transaction-analytics/Plans/Plan 04 — Budgets & Goals.md",
+      "name": "Plan 04 — Budgets & Goals",
       "type": "plan",
-      "summary": "Ліміти по категоріях зі статусом і темпом, цілі накопичення з прогресом.",
+      "summary": null,
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 8
         },
@@ -804,38 +804,38 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Модель даних",
+          "text": "Data model",
           "line": 13,
           "endLine": 17
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 18,
           "endLine": 26
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 27,
           "endLine": 34
         }
       ]
     },
     {
-      "rel": "Plans/Plan 05 — Alerts і Telegram.md",
-      "path": "transaction-analytics/Plans/Plan 05 — Alerts і Telegram.md",
-      "name": "Plan 05 — Alerts і Telegram",
+      "rel": "Plans/Plan 05 — Alerts & Telegram.md",
+      "path": "transaction-analytics/Plans/Plan 05 — Alerts & Telegram.md",
+      "name": "Plan 05 — Alerts & Telegram",
       "type": "plan",
-      "summary": "Rule-based попередження про бюджет, аномалії та підписки з доставкою в Telegram.",
+      "summary": null,
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 9
         },
@@ -849,21 +849,21 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Модель даних",
+          "text": "Data model",
           "line": 14,
           "endLine": 16
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 17,
           "endLine": 29
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 30,
           "endLine": 38
         }
@@ -874,13 +874,13 @@
       "path": "transaction-analytics/Plans/Plan 06 — Insights.md",
       "name": "Plan 06 — Insights",
       "type": "plan",
-      "summary": "Осмислені спостереження й поради: спершу детерміновані, потім LLM-огляд місяця.",
+      "summary": null,
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Мета",
+          "text": "Goal",
           "line": 6,
           "endLine": 9
         },
@@ -894,66 +894,66 @@
         {
           "n": 3,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 14,
           "endLine": 27
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 28,
           "endLine": 35
         }
       ]
     },
     {
-      "rel": "Plans/Plan 07 — Метчинг card↔crypto (крок 5).md",
-      "path": "transaction-analytics/Plans/Plan 07 — Метчинг card↔crypto (крок 5).md",
-      "name": "Plan 07 — Метчинг card↔crypto (крок 5)",
+      "rel": "Plans/Plan 07 — Card↔Crypto Matching (step 5).md",
+      "path": "transaction-analytics/Plans/Plan 07 — Card↔Crypto Matching (step 5).md",
+      "name": "Plan 07 — Card↔Crypto Matching (step 5)",
       "type": "plan",
-      "summary": "Post-processing шар звязку карткового дебету з P2P-крипто-припливом; провайдери про нього не знають.",
+      "summary": "Post-processing layer linking a card debit to a P2P crypto inflow; providers know nothing about it.",
       "rev": "5308f431b2bf",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Обсяг кроку 5 (тільки P2P BUY)",
+          "text": "Step 5 scope (P2P BUY only)",
           "line": 12,
           "endLine": 17
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Правило метчу (P2P)",
+          "text": "Matching rule (P2P)",
           "line": 18,
           "endLine": 26
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Сутність `CryptoPurchase` (нова)",
+          "text": "`CryptoPurchase` entity (new)",
           "line": 27,
           "endLine": 35
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Компоненти",
+          "text": "Components",
           "line": 36,
           "endLine": 46
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Ідемпотентність",
+          "text": "Idempotency",
           "line": 47,
           "endLine": 49
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Критерії приймання",
+          "text": "Acceptance criteria",
           "line": 50,
           "endLine": 61
         }
@@ -964,41 +964,41 @@
       "path": "transaction-analytics/Roadmap & Status.md",
       "name": "Roadmap & Status",
       "type": "index",
-      "summary": "Єдине джерело правди про статус кроків, поточні тести й відомі нюанси.",
+      "summary": "Single source of truth for step status, current tests, and known nuances.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Кроки",
+          "text": "Steps",
           "line": 8,
           "endLine": 21
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Додатково зроблено (поза початковим списком)",
+          "text": "Additional work completed (outside the initial list)",
           "line": 22,
           "endLine": 27
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Definition of Done (кожен крок)",
+          "text": "Definition of Done (each step)",
           "line": 28,
           "endLine": 31
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Поточні тести",
+          "text": "Current tests",
           "line": 32,
           "endLine": 38
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Відомі нюанси",
+          "text": "Known nuances",
           "line": 39,
           "endLine": 56
         }
@@ -1009,20 +1009,20 @@
       "path": "transaction-analytics/Sources/Bank CSV.md",
       "name": "Bank CSV",
       "type": "source",
-      "summary": "Імпорт банківських виписок: кодування, формати дат, окремий parser-клас на банк.",
+      "summary": "Bank statement imports: encoding, date formats, and a separate parser class per bank.",
       "rev": null,
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Особливості",
+          "text": "Characteristics",
           "line": 9,
           "endLine": 14
         },
         {
           "n": 2,
           "level": 2,
-          "text": "Модель",
+          "text": "Model",
           "line": 15,
           "endLine": 20
         }
@@ -1033,55 +1033,55 @@
       "path": "transaction-analytics/Sources/Crypto CSV.md",
       "name": "Crypto CSV",
       "type": "source",
-      "summary": "Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.",
+      "summary": "Binance P2P and deposit CSV: column formats, asset scales, and the externalId hash.",
       "rev": "7a9c952b4991",
       "headings": [
         {
           "n": 1,
           "level": 2,
-          "text": "Два провайдери (кожен = окремий parser + окремий `source`)",
+          "text": "Two providers (each = a separate parser + separate `source`)",
           "line": 12,
           "endLine": 23
         },
         {
           "n": 2,
           "level": 2,
-          "text": "ФАКТИЧНИЙ ФОРМАТ КОЛОНОК (припущення — Binance не документує публічну CSV-схему)",
+          "text": "ACTUAL COLUMN FORMAT (assumption — Binance does not document a public CSV schema)",
           "line": 24,
           "endLine": 46
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Модель / мапінг",
+          "text": "Model / mapping",
           "line": 47,
           "endLine": 73
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Реалізація",
+          "text": "Implementation",
           "line": 74,
           "endLine": 89
         },
         {
           "n": 5,
           "level": 2,
-          "text": "На майбутнє (не ламати зараз)",
+          "text": "Future work (do not break this now)",
           "line": 90,
           "endLine": 94
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Відкриті питання",
+          "text": "Open questions",
           "line": 95,
           "endLine": 101
         },
         {
           "n": 7,
           "level": 2,
-          "text": "Кодування",
+          "text": "Encoding",
           "line": 102,
           "endLine": 105
         }
@@ -1092,7 +1092,7 @@
       "path": "transaction-analytics/Sources/Monobank.md",
       "name": "Monobank",
       "type": "source",
-      "summary": "Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.",
+      "summary": "Monobank Personal API: limits, windowed pagination, and a cross-currency pitfall.",
       "rev": "6b88e191cbd9",
       "headings": [
         {
@@ -1105,35 +1105,35 @@
         {
           "n": 2,
           "level": 2,
-          "text": "Ліміти (поважати обов'язково)",
+          "text": "Limits (must be respected)",
           "line": 16,
           "endLine": 19
         },
         {
           "n": 3,
           "level": 2,
-          "text": "Як тягнемо (windowing)",
+          "text": "How we fetch (windowing)",
           "line": 20,
           "endLine": 29
         },
         {
           "n": 4,
           "level": 2,
-          "text": "Гроші й валюта (важливий підводний камінь)",
+          "text": "Money and currency (important pitfall)",
           "line": 30,
           "endLine": 39
         },
         {
           "n": 5,
           "level": 2,
-          "text": "Мапінг → NormalizedTransaction",
+          "text": "Mapping → NormalizedTransaction",
           "line": 40,
           "endLine": 48
         },
         {
           "n": 6,
           "level": 2,
-          "text": "Бекфіл / інкремент",
+          "text": "Backfill / incremental sync",
           "line": 49,
           "endLine": 52
         }

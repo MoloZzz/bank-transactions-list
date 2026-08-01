@@ -1,60 +1,57 @@
 ---
-summary: Головна доменна цінність: гривнева собівартість крипти через звязок картковий дебет з P2P-припливом.
+summary: Main domain value: gross UAH cost of crypto through the link between card debit and P2P inflow.
 code:
   - src/matching/**
 rev: 5308f431b2bf
 ---
 # Card ↔ Crypto Matching
 
-Головна доменна цінність трекера: побачити **реальну гривневу собівартість крипти**,
-зв'язавши гривневий відтік по картці з крипто-припливом.
+The tracker’s main domain value: see the actual UAH cost of crypto by linking the card withdrawal to the crypto inflow.
 
-> [!note] Це окремий шар post-processing (канон: [[Invariants]] #5)
-> Метчинг запускається **після** того, як обидва джерела завантажені в БД — це
-> окремий шар post-processing, канон: [[Invariants]] #5. Провайдери про нього
-> **не знають**. Матч 1-до-1, з confidence, з можливістю ручного override.
+> [!note] This is a separate post-processing stage (canon: [[Invariants]] #5)
+> Matching starts after both sources are loaded into the DB — this is a separate post-processing stage, canon: [[Invariants]] #5. Providers do not know about it. Match is 1-to-1, with confidence, and with optional manual override.
 
-## Два сценарії
+## Two scenarios
 
-### 1. P2P-купівля (є метч card → crypto) — крок 5
-Binance **P2P CSV** містить: fiat-суму, курс, кількість USDT.
-Метч прив'язує **картковий debit** до крипто-припливу, якщо:
-- `|cardAmount − fiatCost| ≤ tolerance` (суми збігаються в межах допуску);
-- час картки — у вікні **~0–2 год до** отримання крипти.
+### 1. P2P purchase (there is a card → crypto match) — step 5
+Binance **P2P CSV** contains: fiat amount, rate, USDT amount.
+The match links the **card debit** to the crypto inflow if:
+- `|cardAmount – fiatCost| ≤ tolerance` (amounts are within tolerance);
+- the card time is within the **~0–2 hour window before** receiving the crypto.
 
-Курс беремо **з CSV** — нічого не рахуємо самі.
+We take the rate from **CSV** — we do not compute anything ourselves.
 
-### 2. Обмінник / депозит без картки (no match) — крок 6
-Крипто-депозит on-chain без відповідного карткового дебету.
-- `fiat = cryptoAmount × курс(дата)`;
-- USDT ≈ $1; USD/UAH беремо з **NBU API** на дату транзакції;
-- позначаємо `rateSource = NBU`, і що це **estimate** (оцінка, не факт).
+### 2. Exchange / deposit without card (no match) — step 6
+Crypto on-chain deposit without a corresponding card debit.
+- `fiat = cryptoAmount × rate(date)`;
+- USDT ≈ $1; USD/UAH are taken from the **NBU API** on the transaction date;
+- we mark `rateSource = NBU`, and this is an **estimate** (not a fact).
 
-## Що зберігаємо — `CryptoPurchase`
-| поле | сенс |
+## What we store — `CryptoPurchase`
+| field | meaning |
 |---|---|
-| `cryptoTxId` | посилання на крипто-транзакцію (приплив) |
-| `cardTxId?` | посилання на картковий дебет (якщо метч є) |
-| `matchType` | `p2p` (метч) або `estimate` (курс НБУ) |
-| `asset` | актив (напр. USDT) |
-| `cryptoAmount` | к-сть крипти (мінорні одиниці) |
-| `fiatCurrency` | валюта фіату (UAH) |
-| `fiatAmount` | фіатна собівартість (мінорні одиниці) |
-| `rate` | курс |
-| `rateSource` | `CSV` (P2P) або `NBU` (estimate) |
+| `cryptoTxId` | link to the crypto transaction (inflow) |
+| `cardTxId?` | link to the card debit (if a match exists) |
+| `matchType` | `p2p` (match) or `estimate` (NBU rate) |
+| `asset` | asset (e.g. USDT) |
+| `cryptoAmount` | crypto amount (minor units) |
+| `fiatCurrency` | fiat currency (UAH) |
+| `fiatAmount` | fiat cost (minor units) |
+| `rate` | rate |
+| `rateSource` | `CSV` (P2P) or `NBU` (estimate) |
 
-## Правила якості метчу
-- **1-до-1**: один крипто-приплив ↔ максимум один картковий дебет.
-- **confidence**: наскільки впевнений матч (збіг сум + часове вікно).
-- **ручний override**: користувач може підтвердити/перепризначити/розірвати матч.
+## Match quality rules
+- **1-to-1**: one crypto inflow ↔ at most one card debit.
+- **confidence**: how strong the match is (amount fit + time window).
+- **manual override**: the user can confirm/reassign/unmatch a match.
 
-## Звідки беруться дані для метчу
-- Картковий бік: Monobank-транзакції; корисне вже кладеться в `metadata`
-  (`operationAmount`, `operationCurrencyCode`, `mcc`, контрагент). → [[Monobank]]
-- Крипто-бік: [[Crypto CSV]] (P2P зберігає курс+fiatCost у `metadata`).
+## Where matching data comes from
+- Card side: Monobank transactions; useful fields are already in `metadata`
+  (`operationAmount`, `operationCurrencyCode`, `mcc`, counterparty). → [[Monobank]]
+- Crypto side: [[Crypto CSV]] (P2P stores rate+fiatCost in `metadata`).
 
-## Статус
-Статус кроків — лише в [[Roadmap & Status]] (єдине джерело правди). Реалізація:
+## Status
+Step statuses are only in [[Roadmap & Status]] (single source of truth). Implementation:
 `src/modules/crypto-purchases/entities/crypto-purchase.entity.ts`,
-`src/matching/match-selection.ts` (чиста функція вибору) +
-`src/matching/matching.service.ts` (I/O, апсерт), entrypoint `npm run match`.
+`src/matching/match-selection.ts` (pure selection function) +
+`src/matching/matching.service.ts` (I/O, upsert), entrypoint `npm run match`.

@@ -1,49 +1,50 @@
 ---
-summary: Сім непорушних правил проєкту — конституція. Порушення означає стоп і переробку.
+summary: Seven unbreakable rules of the project — the constitution. A violation means stop and rework.
 code:
   - src/core/**
 rev: 9b00294467a9
 ---
 # Invariants
 
-Непорушні правила. Порушення = стоп і переробка. Це «конституція» проєкту.
+Unbreakable rules. Violation = stop and rework. This is the project's "constitution".
 
-## 1. Гроші — ціле в мінорних одиницях, ніколи float
-Фіат — копійки/центи; крипта — свої мінорні одиниці зі scale. Тип у БД —
-`numeric(38,0)`, у коді — `BigInt`. Валюта/актив (`currencyCode`) і `decimals` (scale)
-зберігаються **поруч** із сумою. Людський формат — тільки на шарі показу/експорту.
+## 1. Money is always integers in minor units, never float
+Fiat — kopeks/cents; crypto — its own minor units with scale. DB type is
+`numeric(38,0)`, code type is `BigInt`. Currency/asset (`currencyCode`) and `decimals`
+(scale) are stored **next to** the amount. Human format is only a display/export layer.
 → [[Data Model]], `money.ts`, `bigint.transformer.ts`
 
-## 2. Дати — UTC у БД
-`bookedAt`/`createdAt` — `timestamptz`, завжди UTC. Локальний час/таймзона —
-лише при показі та групуванні.
+## 2. Dates are UTC in the DB
+`bookedAt`/`createdAt` are `timestamptz`, always UTC. Local time/timezone is only for
+display and grouping.
 
-## 3. Ядро не знає про джерело
-Жодних `if (source === 'monobank')` у `core/normalize/sync`. Нове джерело = нова
-папка-провайдер під контрактом `TransactionProvider`. Без винятків. → [[Providers]]
+## 3. The core does not know about the source
+No `if (source === 'monobank')` in `core/normalize/sync`. A new source = a new
+provider folder under the `TransactionProvider` contract. No exceptions. → [[Providers]]
 
-## 4. Дедуп і мультитенантність
-- **Однокористувацький** застосунок: **немає `userId`** (свідоме спрощення).
-- Унікальність дедупу: **`UNIQUE(source, externalId)`**.
-- Синк **ідемпотентний**: повторний запуск не створює дублів (тримається на цьому).
+## 4. Dedup and multi-tenancy
+- **Single-user** app: **no `userId`** (deliberate simplification).
+- Dedupe uniqueness: **`UNIQUE(source, externalId)`**.
+- Sync is **idempotent**: repeated runs do not create duplicates (by design).
 
-## 5. Метчинг — окремий шар post-processing
-Зв'язок card↔crypto рахується **після** завантаження обох джерел. Провайдери про нього
-не знають. Матч 1-до-1, з confidence, з ручним override. → [[Card↔Crypto Matching]]
+## 5. Matching is a separate post-processing stage
+The card↔crypto link is calculated **after** both sources are loaded into the DB.
+Providers do not know about it. Match is 1-to-1, with confidence, and with manual
+override. → [[Card↔Crypto Matching]]
 
-## 6. Сайд-ефекти — тільки через подію
-Google Sheets, майбутня аналітика/AI-категоризація — через підписку на
-`transaction.created`. Експортер не знає про провайдери. Поки що **один** subscriber —
-не плодимо подієвість заздалегідь. → [[Events & Export]]
+## 6. Side effects — only through events
+Google Sheets, future analytics/AI categorization — through a subscription to
+`transaction.created`. The exporter does not know about providers. For now there is
+**one** subscriber — we do not multiply subsystems unnecessarily. → [[Events & Export]]
 
-## 7. Секрети — лише env/secrets
-Monobank token, Google service-account JSON — ніколи в код чи в БД у відкритому вигляді.
-`.env` у `.gitignore`.
+## 7. Secrets — env/secrets only
+Monobank token, Google service-account JSON — never in code or DB in plain text.
+`.env` is in `.gitignore`.
 
 ---
-### Похідні наслідки
-- Провайдер = `fetch()` + мапінг; нуль бізнес-логіки.
-- Усі провайдери віддають `NormalizedTransaction`; шар normalize — спільна дисципліна
-  (валідація BigInt/scale/UTC, хеш externalId).
-- Крос-валюта: `amount` маркується валютою **рахунку**; операційна валюта — в `metadata`.
-  → [[Monobank]]
+### Consequences
+- Provider = `fetch()` + mapping; zero business logic.
+- All providers return `NormalizedTransaction`; the normalize layer is a shared
+  discipline (BigInt/scale/UTC validation, `externalId` hash).
+- Cross-currency: `amount` is marked with the account currency; the operation currency
+  is in `metadata`. → [[Monobank]]

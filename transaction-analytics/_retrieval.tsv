@@ -17,18 +17,18 @@
 #
 # If you tighten the ranking and a `topN` row starts winning outright, promote
 # it to `top` so the improvement is locked in.
-money minor units never float	Architecture/Invariants.md#Гроші	top
-dedup idempotency unique key	Architecture/Invariants.md#Дедуп	topN
-matching post processing layer	Architecture/Invariants.md#Метчинг	topN
-dates utc timezone	Architecture/Invariants.md#Дати	topN
+money minor units never float	Architecture/Invariants.md#1. Money is always integers in minor units, never float	top
+dedup idempotency unique key	Architecture/Invariants.md#4. Dedup and multi-tenancy	topN
+matching post processing layer	Architecture/Invariants.md#5. Matching is a separate post-processing stage	topN
+dates utc timezone	Architecture/Invariants.md#2. Dates are UTC in the DB	topN
 crypto purchase schema	Architecture/Data Model.md#crypto_purchases	topN
-database migrations list	Architecture/Data Model.md#Міграції	topN
+database migrations list	Architecture/Data Model.md#Migrations	topN
 monobank cross currency bug	Sources/Monobank.md	top
 incremental sync watermark	Architecture/Sync Engine.md	top
-binance csv columns format	Sources/Crypto CSV.md#ФАКТИЧНИЙ ФОРМАТ КОЛОНОК	top
+binance csv columns format	Sources/Crypto CSV.md#ACTUAL COLUMN FORMAT	top
 google sheets export events	Architecture/Events & Export.md	top
 nbu rate estimate unmatched	Business/Card↔Crypto Matching.md	topN
 definition of done	Roadmap & Status.md#Definition of Done	top
-transaction providers list	Architecture/Providers.md	top
+TransactionProvider contract provider	Architecture/Providers.md	top
 bank csv import	Sources/Bank CSV.md	topN
 decision rationale why	Decisions/Decision Log.md	top

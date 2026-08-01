@@ -35,7 +35,8 @@
  */
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { readTextOrNull, toPosix } from './fs.mjs';
+import { readTextOrNull, toPosix, GEN_DIR } from './fs.mjs';
+import { digest } from './evidence.mjs';
 import { logEvent } from './log.mjs';
 import { BUDGET, profile, findings } from './ctx.mjs';
 import {
@@ -217,10 +218,15 @@ export function hook(root, which) {
     const pack = contextPack(root);
     // A subagent is the one place the report contract can be stated before the
     // report is written, which is the only moment it can still change anything.
+    //
+    // It is also deliberately the one place the evidence block is NOT sent: a
+    // subagent is doing a task somebody already chose, and handing it a list of
+    // what the data says is more important is an invitation to the scope drift
+    // the report contract above exists to prevent.
     if (which === 'subagent-start') {
       return emit(hookEventName, pack ? `${pack}\n\n${REPORT_CONTRACT}` : REPORT_CONTRACT);
     }
-    return emit(hookEventName, pack);
+    return emit(hookEventName, [pack, digest(root)].filter(Boolean).join('\n\n'));
   } catch {
     return 0;
   }

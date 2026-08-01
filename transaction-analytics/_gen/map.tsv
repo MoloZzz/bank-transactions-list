@@ -1,26 +1,26 @@
 # path	type	summary
-00 — Index.md	index	Хаб бази знань: навігація по нотах — бізнес, архітектура, джерела, рішення, плани.
-Analytics & Control — Backlog.md	index	Беклог перетворення трекера на систему фінансового контролю: Plan 00-06 і порядок виконання.
-Architecture/Architecture Overview.md	architecture	Шари й потік даних: source-agnostic ядро, провайдери збоку, сайд-ефекти через подію.
-Architecture/Data Model.md	architecture	Сутності, поля, типи, індекси, ERD і міграції. Гроші — numeric(38,0) на BigInt.
-Architecture/Events & Export.md	architecture	Подія transaction.created і Google Sheets subscriber; батч-флаш замість per-event запису.
-Architecture/Invariants.md	architecture	Сім непорушних правил проєкту — конституція. Порушення означає стоп і переробку.
-Architecture/Providers.md	architecture	Контракт TransactionProvider: fetch плюс мапінг у NormalizedTransaction, нуль бізнес-логіки.
-Architecture/Sync Engine.md	architecture	SyncService: віконна пагінація, дедуп по UNIQUE source-externalId, watermark-інкремент.
-Business/Card↔Crypto Matching.md	business	Головна доменна цінність: гривнева собівартість крипти через звязок картковий дебет з P2P-припливом.
-Business/Glossary.md	business	Терміни: Transaction, Account, CryptoPurchase, provider, normalize, мінорні одиниці, scale.
-Business/Requirements.md	business	Функціональні R1-R13 і нефункціональні NR1-NR4 вимоги трекера.
-Business/Vision & Goals.md	business	Що це, для кого, навіщо, принципи і явні межі out of scope.
-Decisions/Decision Log.md	decision	Ключові архітектурні рішення і причини у форматі рішення, чому, наслідок.
-Plans/Plan 00 — Bank CSV.md	plan	Повнота карткових даних: імпорт виписок інших банків як новий провайдер, без змін у ядрі.
-Plans/Plan 01 — Категоризація.md	plan	Категорія і нормалізований мерчант на кожну транзакцію — фундамент аналітики, бюджетів, алертів.
-Plans/Plan 02 — Гігієна даних.md	plan	Перекази, курси НБУ, підписки: власні перекази не витрати, все зводиться до UAH.
-Plans/Plan 03 — Агрегації.md	plan	Єдине джерело обчислених показників для звітів, бюджетів, алертів та insights.
-Plans/Plan 04 — Бюджети й цілі.md	plan	Ліміти по категоріях зі статусом і темпом, цілі накопичення з прогресом.
-Plans/Plan 05 — Alerts і Telegram.md	plan	Rule-based попередження про бюджет, аномалії та підписки з доставкою в Telegram.
-Plans/Plan 06 — Insights.md	plan	Осмислені спостереження й поради: спершу детерміновані, потім LLM-огляд місяця.
-Plans/Plan 07 — Метчинг card↔crypto (крок 5).md	plan	Post-processing шар звязку карткового дебету з P2P-крипто-припливом; провайдери про нього не знають.
-Roadmap & Status.md	index	Єдине джерело правди про статус кроків, поточні тести й відомі нюанси.
-Sources/Bank CSV.md	source	Імпорт банківських виписок: кодування, формати дат, окремий parser-клас на банк.
-Sources/Crypto CSV.md	source	Binance P2P та deposit CSV: формати колонок, scale активів, хеш externalId.
-Sources/Monobank.md	source	Monobank Personal API: ліміти, віконна пагінація, крос-валютний підводний камінь.
+00 — Index.md	index	Knowledge base hub: navigation through notes — business, architecture, sources, decisions, and plans.
+Analytics & Control — Backlog.md	index	
+Architecture/Architecture Overview.md	architecture	Data flow and data stream: source-agnostic core, providers outside, side effects through events.
+Architecture/Data Model.md	architecture	Entities, fields, types, indexes, ERD and migrations. Money — numeric(38,0) to BigInt.
+Architecture/Events & Export.md	architecture	transaction.created event and Google Sheets subscriber; batched flush instead of per-event write.
+Architecture/Invariants.md	architecture	Seven unbreakable rules of the project — the constitution. A violation means stop and rework.
+Architecture/Providers.md	architecture	TransactionProvider contract: fetch plus map into NormalizedTransaction, zero business logic.
+Architecture/Sync Engine.md	architecture	SyncService: incremental run, dedupe by UNIQUE source-externalId, watermark increment.
+Business/Card↔Crypto Matching.md	business	Main domain value: gross UAH cost of crypto through the link between card debit and P2P inflow.
+Business/Glossary.md	business	Terms: Transaction, Account, CryptoPurchase, provider, normalize, minor units, scale.
+Business/Requirements.md	business	Functional R1-R13 and non-functional NR1-NR4 tracker requirements.
+Business/Vision & Goals.md	business	What this is, for whom, why, principles and explicit out-of-scope.
+Decisions/Decision Log.md	decision	Key architectural decisions and why, in decision format: decision, reason, consequence.
+Plans/Plan 00 — Bank CSV.md	plan	Complete card data: import statements from other banks as a new provider, without core changes.
+Plans/Plan 01 — Categorization.md	plan	A category and normalized merchant for every transaction — the foundation for analytics, budgets, and alerts.
+Plans/Plan 02 — Data Hygiene.md	plan	Transfers, NBU rates, subscriptions: own transfers are not expenses, and everything is converted to UAH.
+Plans/Plan 03 — Aggregations.md	plan	Single source of computed metrics for reports, budgets, alerts, and insights.
+Plans/Plan 04 — Budgets & Goals.md	plan	
+Plans/Plan 05 — Alerts & Telegram.md	plan	
+Plans/Plan 06 — Insights.md	plan	
+Plans/Plan 07 — Card↔Crypto Matching (step 5).md	plan	Post-processing layer linking a card debit to a P2P crypto inflow; providers know nothing about it.
+Roadmap & Status.md	index	Single source of truth for step status, current tests, and known nuances.
+Sources/Bank CSV.md	source	Bank statement imports: encoding, date formats, and a separate parser class per bank.
+Sources/Crypto CSV.md	source	Binance P2P and deposit CSV: column formats, asset scales, and the externalId hash.
+Sources/Monobank.md	source	Monobank Personal API: limits, windowed pagination, and a cross-currency pitfall.
