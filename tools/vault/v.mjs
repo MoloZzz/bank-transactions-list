@@ -30,6 +30,7 @@ const USAGE = `vault — knowledge base tooling
   ctx [<session>] [--all] [--list] [--history] [--json]  where this session's tokens went
       [--strict] [--transcript <path>]
   decide "<line>" --section <substring>                append a row to Decision Log
+  evidence [--dry] [--json]                            measure _metrics.tsv against the live DB
   init-hooks                                           arm core.hooksPath (never fails)
   hook session-start|subagent-start|post-read          Claude Code hook adapter
 
@@ -169,6 +170,11 @@ async function main() {
       const { decide } = await import('./lib/render.mjs');
       if (!positional.length) throw new UsageError('decide requires the decision text');
       return decide(root, positional.join(' '), flags);
+    }
+    case 'evidence': {
+      // Reads live data, so it is NOT part of `check` and never runs in a hook.
+      const { evidence } = await import('./lib/evidence.mjs');
+      return evidence(root, flags);
     }
     default:
       process.stderr.write(`vault: unknown command '${cmd}'\n\n${USAGE}`);

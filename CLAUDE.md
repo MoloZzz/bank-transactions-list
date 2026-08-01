@@ -68,7 +68,15 @@ pin <note>                       re-pin rev: after the code it describes changed
 decide "<line>" --section <sub>  append a row to Decision Log
 log [--misses]                   retrieval misses, truncations, L4 reads
 ctx [--all] [--history] [--strict]  where this session's tokens went; exit 1 over budget
+evidence [--dry] [--json]        run `_metrics.tsv` against the live DB; ranks plans by data
 ```
+
+`evidence` is the Observe stage of the product loop: it answers **which plan the data justifies
+now**, so priorities are measured rather than asserted. A fired trigger means *act on that plan*.
+It reads live data, so it is deliberately **not** part of `check` and never runs in a hook, and
+its output is gitignored (`tools/vault/.evidence.tsv`) — it describes this machine's data, not
+repo state. Numbers are directional, never statistical: one user, small n. A plan with no metric
+(Plan 00) is decided by judgement — absence of a row is not evidence against it.
 From `backend/`, also as `npm run vault:build|check|find|show|brief|log|decide|ctx`.
 
 Use `decide` for **rejected** approaches too — what a previous agent tried and discarded has no

@@ -13,3 +13,9 @@ tools/vault/.log.tsv
 # out of _gen/, and it describes this machine's sessions, not the repo.
 tools/vault/.ctx.json
 tools/vault/.ctx.tsv
+
+# Product-loop measurements (`vault evidence`). Derived from the transaction
+# data on this machine, not from the repo — so it changes when the data changes,
+# for reasons unrelated to any commit. The registry it runs
+# (transaction-analytics/_metrics.tsv) IS repo state and is tracked.
+tools/vault/.evidence.tsv
