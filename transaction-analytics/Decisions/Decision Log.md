@@ -181,3 +181,4 @@ Key decisions and why. Format: decision → reason / consequence.
   repository. Privacy — two checks (whitelisted columns value//n + value must be a trimmed
   number; the second catches aliased text). Plan 00 knows without metrics: it imports money the
   DB had never seen, so it is not measured by asking the same DB.
+- Vault extracted into a reusable package: config.mjs sits below fs.mjs (importing it back would be a cycle), stack knowledge moved behind an adapter seam (adapters/nest-typeorm.mjs, adapters/none.mjs), and the context.txt template now comes from vault.config.json. Defaults are deliberately generic rather than this repo's names, so a project that forgets the config gets an empty vault instead of one silently pointed at transaction-analytics/. Config is resolved by walking up from cwd only: a fallback to the module's own directory silently adopted the CLI's own repo config when run elsewhere. Acceptance criterion was byte-identical _gen/*.

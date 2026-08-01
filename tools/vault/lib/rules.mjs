@@ -9,7 +9,7 @@
  * new hook from blocking every commit on day one.
  */
 import * as path from 'node:path';
-import { VAULT_DIR, GEN_DIR, readText, readTextOrNull, exists, sortBy, cmp, norm, expandPatterns, digestFiles } from './fs.mjs';
+import { VAULT_DIR, GEN_DIR, CODE_PREFIX, readText, readTextOrNull, exists, sortBy, cmp, norm, expandPatterns, resolveCodePattern, digestFiles } from './fs.mjs';
 import { stagedPaths, worktreeDirty, git } from './git.mjs';
 import { stripFences } from './notes.mjs';
 // Safe to import statically: search.mjs is read-only apart from the gitignored
@@ -83,7 +83,7 @@ export function collectFindings(ctx) {
   for (const t of migTables) {
     if (!entityTables.includes(t)) out.push(f('entity-table-drift', t, `migration creates "${t}" but no @Entity maps to it`));
   }
-  for (const k of env.missing) out.push(f('env-undocumented', k, 'used in backend/src but absent from backend/.env.example'));
+  for (const k of env.missing) out.push(f('env-undocumented', k, `used in ${CODE_PREFIX}src but absent from ${CODE_PREFIX}.env.example`));
   for (const o of ctx.tests.only) out.push(f('test-only', o, '.only/fit/ftest committed — the rest of the suite is silently skipped'));
 
   // ---- per-note content rules
@@ -130,7 +130,7 @@ export function collectFindings(ctx) {
 
     // rev pin freshness
     if (note.data?.code?.length && note.data?.rev) {
-      const files = expandPatterns(ctx.root, note.data.code.map((p) => (p.startsWith('backend/') ? p : `backend/${p}`)));
+      const files = expandPatterns(ctx.root, note.data.code.map(resolveCodePattern));
       const actual = digestFiles(ctx.root, files);
       if (actual !== note.data.rev) {
         out.push(f('rev-stale', note.rel, `code it describes changed (rev ${note.data.rev} -> ${actual}); review the note, then: vault pin "${note.rel}"`));
@@ -290,11 +290,12 @@ function retrievalRules(ctx) {
 function legacyRules(ctx) {
   const out = [];
   if (!ctx.staged) return out;
-  const codeChanged = ctx.staged.filter((p) => /^backend\/(src|test)\//.test(p));
+  const codeRe = new RegExp(`^${CODE_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(src|test)/`);
+  const codeChanged = ctx.staged.filter((p) => codeRe.test(p));
   const vaultChanged = ctx.staged.filter((p) => p.startsWith(`${VAULT_DIR}/`));
   if (codeChanged.length && !vaultChanged.length) {
     out.push(f('legacy-code-without-vault', 'commit',
-      'backend/src|test changed with no transaction-analytics/ change. Update at least Roadmap & Status.md; schema/architecture changes also need Architecture/. New decision -> Decision Log. Genuinely no-knowledge change (typo/rename): SKIP_VAULT_CHECK=1'));
+      `${CODE_PREFIX}src|test changed with no ${VAULT_DIR}/ change. Update at least Roadmap & Status.md; schema/architecture changes also need Architecture/. New decision -> Decision Log. Genuinely no-knowledge change (typo/rename): SKIP_VAULT_CHECK=1`));
   }
   const index = ctx.notes.find((n) => n.name === '00 — Index');
   if (index && /Наступне —|Кроки [0-9]/.test(index.body)) {
@@ -320,7 +321,7 @@ export function check(root, flags = {}) {
       const actual = readTextOrNull(p);
       const expected = norm(fn(ctx)).replace(/\n*$/, '\n');
       if (actual === null) findings.push(f('autoblock-stale', `${GEN_DIR}/${name}`, 'missing — run: npm run vault:build'));
-      else if (norm(actual) !== expected) findings.push(f('autoblock-stale', `${GEN_DIR}/${name}`, 'stale — run: npm run vault:build && git add transaction-analytics/_gen'));
+      else if (norm(actual) !== expected) findings.push(f('autoblock-stale', `${GEN_DIR}/${name}`, `stale — run: npm run vault:build && git add ${GEN_DIR}`));
     }
 
     // ---- auto-block freshness inside hand-written files
@@ -335,7 +336,7 @@ export function check(root, flags = {}) {
       // commit carries stale generated output while the worktree looks fine.
       const dirtyGen = worktreeDirty(`${VAULT_DIR}/_gen`);
       if (dirtyGen.length) {
-        findings.push(f('autoblock-stale', 'commit', `unstaged changes in ${GEN_DIR}: ${dirtyGen.join(' ')} — run: git add transaction-analytics/_gen`));
+        findings.push(f('autoblock-stale', 'commit', `unstaged changes in ${GEN_DIR}: ${dirtyGen.join(' ')} — run: git add ${GEN_DIR}`));
       }
       const dirtyNotes = worktreeDirty(VAULT_DIR).filter((p) => ctx.staged.includes(p));
       for (const p of dirtyNotes) findings.push(f('partial-stage', p, 'staged and further modified in the worktree; the commit will not contain what was validated'));

@@ -24,15 +24,17 @@
  */
 import { readFileSync, writeFileSync, appendFileSync, existsSync, statSync, openSync, readSync, closeSync } from 'node:fs';
 import * as path from 'node:path';
+import { CONFIG } from './config.mjs';
 import { VAULT_DIR, GEN_DIR, toPosix } from './fs.mjs';
 import { readRows } from './log.mjs';
 
 /**
  * Anything above this and the agent is working in a degraded window.
- * Defined here rather than in ctx.mjs so that this module — which loads in
- * front of every Read and Write — never pulls in the profiler.
+ * Read from config here rather than from ctx.mjs so that this module — which
+ * loads in front of every Read and Write — never pulls in the profiler.
+ * config.mjs is one memoized JSON read, so it does not change that.
  */
-export const BUDGET = 50_000;
+export const BUDGET = CONFIG.budget;
 
 export const STATE_REL = 'tools/vault/.ctx.json';
 export const HISTORY_REL = 'tools/vault/.ctx.tsv';

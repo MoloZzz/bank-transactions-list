@@ -13,10 +13,12 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import * as path from 'node:path';
+import { CONFIG } from './config.mjs';
 
-export const VAULT_DIR = 'transaction-analytics';
+export const VAULT_DIR = CONFIG.vaultDir;
 export const GEN_DIR = `${VAULT_DIR}/_gen`;
-export const BACKEND_DIR = 'backend';
+/** The project's code root. Named for history; `config.codeRoot` is the truth. */
+export const BACKEND_DIR = CONFIG.codeRoot;
 
 /** Convert any platform path to the POSIX form used as a vault-internal identifier. */
 export function toPosix(p) {
@@ -149,6 +151,25 @@ function repoListing(root) {
  * Deliberately minimal: the `code:` frontmatter field only ever uses these two
  * shapes, and a full glob implementation would be a dependency or a bug farm.
  */
+/**
+ * `'backend/'`, or `''` when the code root IS the repo root. Every path built
+ * from the code root goes through this rather than `${BACKEND_DIR}/`, which
+ * would produce `./src/...` for the default config and match nothing —
+ * `walk()` returns `src/...`.
+ */
+export const CODE_PREFIX = !BACKEND_DIR || BACKEND_DIR === '.' ? '' : `${BACKEND_DIR}/`;
+
+/**
+ * A note's `code:` entry may be written relative to the code root (`src/x.ts`)
+ * or from the repo root (`backend/src/x.ts`). Both must resolve to the same
+ * files, so every caller of `expandPatterns` on `code:` frontmatter goes
+ * through here — this used to be the same expression copied into three places,
+ * where changing the code root would have fixed two of them.
+ */
+export function resolveCodePattern(p) {
+  return !CODE_PREFIX || p.startsWith(CODE_PREFIX) ? p : `${CODE_PREFIX}${p}`;
+}
+
 export function expandPatterns(root, patterns) {
   const all = repoListing(root);
   const hits = new Set();
